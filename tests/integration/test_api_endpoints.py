@@ -137,10 +137,10 @@ def test_rate_limit_office_event(client: TestClient):
     proj_res = client.post(
         "/api/projects",
         json={
-            "title": "Rate Limit Test",
-            "vision": "Check 429",
-            "creator_id": "mem-boss",
-            "distilled_specs": "Spec enough to pass validation",
+                "title": "Rate Limit Test",
+                "vision": "Check 429 enough length",
+                "creator_id": "mem-boss",
+                "distilled_specs": "Spec enough to pass validation",
             "required_skills": ["python"],
         },
     )

@@ -9,6 +9,7 @@ help:
 	@echo "build   - Build pip wheel and sdist packages"
 	@echo "clean   - Remove build artifacts and caches"
 	@echo "docs    - Build documentation"
+	@echo "loadtest- Run locust load tests"
 
 install:
 	python -m pip install --upgrade pip
@@ -30,3 +31,6 @@ clean:
 
 docs:
 	mkdocs build
+
+loadtest:
+	locust -f locustfile.py --headless -u 100 -r 10 --run-time 1m -H http://localhost:8000

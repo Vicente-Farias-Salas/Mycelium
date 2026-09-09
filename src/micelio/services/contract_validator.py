@@ -3,7 +3,10 @@
 from typing import Any
 import jsonschema
 from jsonschema.exceptions import ValidationError
-from micelio.domain.models import SynapseEventRequest, LivingProject
+from micelio.domain.models import LivingProject
+# Since SynapseEventRequest is in app.py and we don't want circular imports,
+# we use typing Any or redefine it loosely here, or just import it locally inside the method,
+# OR we can just pass the payload directly to the validator.
 
 class ContractViolationError(Exception):
     """Raised when an agent violates the established shared contract."""
@@ -12,7 +15,7 @@ class ContractViolationError(Exception):
 class ContractValidator:
     """Validates Synapse Events against dynamic JSONSchemas defined in the project."""
 
-    def validate_event(self, project: LivingProject, event: SynapseEventRequest) -> None:
+    def validate_event(self, project: LivingProject, event: Any) -> None:
         """
         Check if the event payload matches any contract defined in the project.
         Contracts are stored in project.shared_contracts as JSONSchema dicts keyed by event_type.name.

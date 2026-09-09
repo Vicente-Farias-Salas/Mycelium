@@ -127,3 +127,17 @@ def test_synapse_office_event_flow(client: TestClient):
     assert len(history) == 1
     assert history[0]["event_type"] == "AGENT_QUERY"
     assert history[0]["payload"]["question"] == "¿El schema soporta streaming?"
+
+
+def test_predict_churn_endpoint(client: TestClient):
+    """Verify predictive churn scoring endpoint."""
+    response = client.get("/api/tenants/t-123/predict-churn?events_count=10&tickets_count=6")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["tenant_id"] == "t-123"
+    assert data["risk_level"] in ("HIGH", "CRITICAL")
+    
+    response2 = client.get("/api/tenants/t-456/predict-churn?events_count=15000&tickets_count=0")
+    assert response2.status_code == 200
+    data2 = response2.json()
+    assert data2["risk_level"] == "LOW"

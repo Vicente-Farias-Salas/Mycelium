@@ -317,6 +317,16 @@ def create_app(
         risk = predictor.calculate_risk(tenant, events_count, tickets_count, failed_audits)
         return risk.model_dump()
 
+    @app.get("/api/analytics/overview")
+    async def get_analytics_overview():
+        """Retrieve aggregated data for the dashboard UI."""
+        return {
+            "total_projects": project_repo.count(),
+            "total_events": event_repo.count(),
+            "compliance_score": 99.9,  # Placeholder for future dynamic score
+            "active_swarms_count": project_repo.count()  # Using total for now
+        }
+
     @app.get("/api/projects/{project_id}/audit")
     async def audit_project(project_id: str):
         from micelio.services.compliance import ComplianceAuditor

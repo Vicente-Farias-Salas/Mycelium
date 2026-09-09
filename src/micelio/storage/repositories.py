@@ -69,6 +69,12 @@ class SqliteProjectRepository:
         with self._db.get_connection() as conn:
             conn.execute(query, (status.value, project_id))
 
+    def count(self) -> int:
+        """Return total number of projects."""
+        query = "SELECT COUNT(*) FROM projects;"
+        with self._db.get_connection() as conn:
+            return conn.execute(query).fetchone()[0]
+
 
 class SqliteNutrientRepository:
     """Repository for NutrientPackage persistence."""
@@ -232,3 +238,9 @@ class SqliteEventRepository:
                     )
                 )
             return tuple(events)
+
+    def count(self) -> int:
+        """Return total number of events."""
+        query = "SELECT COUNT(*) FROM synapse_events;"
+        with self._db.get_connection() as conn:
+            return conn.execute(query).fetchone()[0]

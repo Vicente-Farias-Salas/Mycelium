@@ -212,3 +212,24 @@ def test_frontend_portal(client: TestClient):
     response = client.get("/portal/")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
+
+def test_analytics_overview_endpoint(client: TestClient):
+    """Verify that analytics overview returns correct counters."""
+    # Insert one project to ensure count > 0
+    client.post(
+        "/api/projects",
+        json={
+            "title": "Analytics Test",
+            "vision": "Check counts",
+            "creator_id": "mem-1",
+            "distilled_specs": "Spec",
+            "required_skills": ["python"],
+        },
+    )
+    
+    response = client.get("/api/analytics/overview")
+    assert response.status_code == 200
+    data = response.json()
+    assert "total_projects" in data
+    assert data["total_projects"] > 0
+    assert "total_events" in data

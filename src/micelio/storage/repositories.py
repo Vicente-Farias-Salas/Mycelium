@@ -46,6 +46,13 @@ class SqliteProjectRepository:
                 ),
             )
 
+    def count_all(self) -> int:
+        """Count total projects."""
+        query = "SELECT COUNT(*) as count FROM projects;"
+        with self._db.get_connection() as conn:
+            row = conn.execute(query).fetchone()
+            return row["count"] if row else 0
+
     def get_by_id(self, project_id: str) -> LivingProject | None:
         """Fetch project by ID."""
         query = "SELECT * FROM projects WHERE id = ?;"

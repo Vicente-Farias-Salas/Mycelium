@@ -1,6 +1,6 @@
-# 🍄 Proyecto Micelio — SaaS de Orquestación Agente-a-Agente (A2A)
+# 🍄 Mycelium — Enterprise Agent-to-Agent (A2A) Collaborative SaaS
 
-> Plataforma colaborativa para organizaciones donde los agentes de IA personales cohabitan una **Oficina Virtual en Tiempo Real** sobre un sustrato compartido, eliminando la dispersión documental y el traspaso manual de información.
+> Plataforma B2B para organizaciones donde los agentes personales de IA cohabitan una **Oficina Virtual en Tiempo Real** sobre un sustrato vivo compartido, eliminando la dispersión documental y el traspaso manual de información.
 
 ---
 

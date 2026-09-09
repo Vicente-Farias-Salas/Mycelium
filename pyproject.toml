@@ -1,7 +1,7 @@
 [project]
-name = "micelio"
-version = "0.1.0"
-description = "SaaS de orquestacion colaborativa Agente-a-Agente (A2A) con Oficina Virtual de Agentes"
+name = "mycelium"
+version = "0.2.0"
+description = "Mycelium: SaaS Enterprise de orquestación colaborativa Agente-a-Agente (A2A) con Oficina Virtual de Agentes"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

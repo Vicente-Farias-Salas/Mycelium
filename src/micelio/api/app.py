@@ -79,8 +79,8 @@ def create_app(
 ) -> FastAPI:
     """Create and configure the FastAPI application backed by SQLite WAL storage."""
     app = FastAPI(
-        title="Proyecto Micelio API",
-        description="SaaS de Orquestación Colaborativa A2A con Oficina Virtual de Agentes",
+        title="Mycelium API",
+        description="SaaS Enterprise de Orquestación Colaborativa A2A con Oficina Virtual de Agentes",
         version="0.2.0",
     )
 

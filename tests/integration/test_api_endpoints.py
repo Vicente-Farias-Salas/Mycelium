@@ -141,3 +141,33 @@ def test_predict_churn_endpoint(client: TestClient):
     assert response2.status_code == 200
     data2 = response2.json()
     assert data2["risk_level"] == "LOW"
+
+def test_audit_project_endpoint(client: TestClient):
+    """Verify SOC2/GDPR compliance audit endpoint."""
+    proj_res = client.post(
+        "/api/projects",
+        json={
+            "title": "Audit Test",
+            "vision": "Check compliance",
+            "creator_id": "mem-boss",
+            "distilled_specs": "Spec",
+            "required_skills": ["python"],
+        },
+    )
+    project_id = proj_res.json()["id"]
+
+    event_payload = {
+        "event_type": "AGENT_QUERY",
+        "source_agent_id": "agt-data",
+        "target_agent_id": "agt-backend",
+        "payload": {"question": "Here is my secret email: test@example.com"},
+    }
+    client.post(f"/api/projects/{project_id}/events", json=event_payload)
+
+    audit_res = client.get(f"/api/projects/{project_id}/audit")
+    assert audit_res.status_code == 200
+    audit_data = audit_res.json()
+    
+    assert audit_data["is_compliant"] is False
+    assert len(audit_data["findings"]) == 1
+    assert audit_data["findings"][0]["severity"] == "HIGH"

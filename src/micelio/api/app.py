@@ -299,4 +299,13 @@ def create_app(
         risk = predictor.calculate_risk(tenant, events_count, tickets_count)
         return risk.model_dump()
 
+    @app.get("/api/projects/{project_id}/audit")
+    async def audit_project(project_id: str):
+        from micelio.services.compliance import ComplianceAuditor
+        
+        events = event_repo.get_by_project(project_id)
+        auditor = ComplianceAuditor()
+        report = auditor.run_audit(project_id, list(events))
+        return report.model_dump()
+
     return app

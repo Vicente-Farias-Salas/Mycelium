@@ -277,3 +277,13 @@ def test_prometheus_metrics_endpoint(client: TestClient):
     assert "http_requests_total" in text
     assert "http_request_duration_seconds" in text
     assert "synapse_events_emitted_total" in text
+
+def test_health_profiling_endpoint(client: TestClient):
+    """Verify that the health diagnostics endpoint works."""
+    response = client.get("/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "pass"
+    assert "uptime_seconds" in data
+    assert "active_threads" in data
+    assert "python_version" in data

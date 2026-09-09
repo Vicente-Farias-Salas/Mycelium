@@ -109,6 +109,12 @@ def create_app(
     @app.get("/metrics", include_in_schema=False)
     async def metrics_endpoint():
         return get_metrics_response()
+        
+    from micelio.core.health import get_system_health
+    @app.get("/health", tags=["Diagnostics"])
+    async def health_check() -> dict[str, Any]:
+        """Provides core health diagnostics and active resource profiling."""
+        return get_system_health()
 
     frontend_dir = Path(__file__).parent.parent / "frontend"
     if frontend_dir.exists():

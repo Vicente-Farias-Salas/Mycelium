@@ -263,3 +263,13 @@ def test_global_analytics_live_feed(client: TestClient):
         data = websocket.receive_json()
         assert data["source_agent_id"] == "test-ws-agent"
         assert data["payload"]["status"] == "testing_ws"
+
+def test_prometheus_metrics_endpoint(client: TestClient):
+    """Verify that the prometheus metrics endpoint exposes metrics."""
+    response = client.get("/metrics")
+    assert response.status_code == 200
+    assert "text/plain" in response.headers["content-type"]
+    text = response.text
+    assert "http_requests_total" in text
+    assert "http_request_duration_seconds" in text
+    assert "synapse_events_emitted_total" in text

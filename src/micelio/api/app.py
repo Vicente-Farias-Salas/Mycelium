@@ -9,6 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
+from micelio.core.config import config
+from micelio.core.metrics import metrics_middleware, get_metrics_response, SYNAPSE_EVENTS_EMITTED
+
 from micelio.agent.workspace_bootstrapper import WorkspaceBootstrapper
 from micelio.core.synapse_bus import SynapseBus
 from micelio.domain.models import (
@@ -74,8 +77,6 @@ class SynapseEventRequest(BaseModel):
     payload: dict[str, Any] = Field(default_factory=dict)
 
 
-from micelio.core.config import config
-
 def create_app(
     workspace_base_dir: Path | str | None = None,
     db_path: Path | str | None = None,
@@ -100,6 +101,12 @@ def create_app(
         allow_headers=["*"],
     )
     
+    app.middleware("http")(metrics_middleware)
+    
+    @app.get("/metrics", include_in_schema=False)
+    async def metrics_endpoint():
+        return get_metrics_response()
+
     frontend_dir = Path(__file__).parent.parent / "frontend"
     if frontend_dir.exists():
         app.mount("/portal", StaticFiles(directory=str(frontend_dir), html=True), name="portal")
@@ -257,6 +264,9 @@ def create_app(
         )
         event_repo.save(event)
         await bus.publish(event)
+        
+        # Track metric
+        SYNAPSE_EVENTS_EMITTED.labels(event_type=req.event_type.name).inc()
         
         # Broadcast to dashboard
         event_dict = event.model_dump()

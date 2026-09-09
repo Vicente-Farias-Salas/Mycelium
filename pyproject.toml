@@ -20,6 +20,7 @@ dependencies = [
     "prometheus-client>=0.17.0",
     "jsonschema>=4.20.0",
     "PyJWT>=2.8.0",
+    "orjson>=3.10.0",
 ]
 
 [project.scripts]

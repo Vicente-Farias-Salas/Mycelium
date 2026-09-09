@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 import uuid
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi.responses import ORJSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
@@ -94,7 +95,8 @@ def create_app(
         title="Mycelium API",
         description="SaaS Enterprise de Orquestación Colaborativa A2A con Oficina Virtual de Agentes",
         version="0.2.0",
-        debug=config.debug
+        debug=config.debug,
+        default_response_class=ORJSONResponse,
     )
 
     app.add_middleware(
@@ -340,9 +342,12 @@ def create_app(
         event_dict = event.model_dump()
         event_dict["timestamp"] = event.timestamp.isoformat()
         
+        import orjson
+        json_bytes = orjson.dumps(event_dict)
+        
         for ws in list(global_ws_connections):
             try:
-                await ws.send_json(event_dict)
+                await ws.send_text(json_bytes.decode('utf-8'))
             except Exception:
                 pass
                 
@@ -399,7 +404,8 @@ def create_app(
                     payload = event.model_dump()
                     # Serialize datetime to ISO string
                     payload["timestamp"] = event.timestamp.isoformat()
-                    await websocket.send_json(payload)
+                    import orjson
+                    await websocket.send_text(orjson.dumps(payload).decode('utf-8'))
                 if recv_task in done:
                     # Client sent a message, keepalive or query
                     _ = recv_task.result()

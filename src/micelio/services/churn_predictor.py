@@ -36,7 +36,7 @@ class ChurnPredictor:
             factors.append("High number of unresolved support tickets")
             
         # Factor 3: Subscription Tier
-        if tenant.subscription_tier.name == "STARTER":
+        if tenant.tier.name == "STARTER":
             score += 0.1
             factors.append("Starter tier historically has higher churn")
             
@@ -53,7 +53,7 @@ class ChurnPredictor:
             level = "CRITICAL"
             
         return ChurnRiskScore(
-            tenant_id=tenant.id,
+            tenant_id=tenant.tenant_id,
             risk_score=round(score, 3),
             risk_level=level,
             key_factors=tuple(factors)

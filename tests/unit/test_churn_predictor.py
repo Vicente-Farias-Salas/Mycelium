@@ -6,9 +6,9 @@ from micelio.services.churn_predictor import ChurnPredictor, ChurnRiskScore
 def test_calculate_high_risk_churn():
     """Test high risk calculation for low engagement and high support tickets."""
     tenant = Tenant(
-        id="tenant-123",
+        tenant_id="tenant-123",
         name="Acme Corp",
-        subscription_tier=SubscriptionTier.STARTER
+        tier=SubscriptionTier.STARTER
     )
     predictor = ChurnPredictor()
     
@@ -23,9 +23,9 @@ def test_calculate_high_risk_churn():
 def test_calculate_low_risk_churn():
     """Test low risk calculation for high engagement."""
     tenant = Tenant(
-        id="tenant-456",
+        tenant_id="tenant-456",
         name="Tech Giant",
-        subscription_tier=SubscriptionTier.ENTERPRISE
+        tier=SubscriptionTier.ENTERPRISE
     )
     predictor = ChurnPredictor()
     

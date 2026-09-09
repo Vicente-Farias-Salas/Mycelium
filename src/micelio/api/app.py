@@ -290,9 +290,9 @@ def create_app(
         
         # Simulate fetching tenant from DB
         tenant = Tenant(
-            id=tenant_id,
+            tenant_id=tenant_id,
             name=f"Tenant {tenant_id}",
-            subscription_tier=SubscriptionTier.STARTER if events_count < 500 else SubscriptionTier.ENTERPRISE
+            tier=SubscriptionTier.STARTER if events_count < 500 else SubscriptionTier.ENTERPRISE
         )
         
         predictor = ChurnPredictor()

@@ -160,6 +160,17 @@ def create_app(
         """Register or update a commercial tenant."""
         quota_manager.register_tenant(req)
         return req.model_dump()
+        
+    class TokenRequest(BaseModel):
+        subject: str
+        expires_in: int = 3600
+
+    @app.post("/api/token", status_code=200, dependencies=[Depends(verify_api_key)])
+    async def generate_token(req: TokenRequest) -> dict[str, str]:
+        """Generate a JWT for a tenant or agent. Requires master API Key."""
+        from micelio.core.security import create_jwt_token
+        token = create_jwt_token(req.subject, req.expires_in)
+        return {"access_token": token, "token_type": "bearer"}
 
     @app.post("/api/projects", status_code=201, dependencies=[Depends(verify_api_key)])
     async def create_project(req: ProjectCreateRequest) -> LivingProject:

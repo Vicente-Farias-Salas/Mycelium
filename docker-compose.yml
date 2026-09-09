@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  mycelium-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - MYCELIUM_ENV=production
+      - MYCELIUM_API_KEY=compose-local-secret
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    restart: unless-stopped
+    depends_on:
+      - mycelium-api

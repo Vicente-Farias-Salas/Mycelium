@@ -46,9 +46,12 @@
                                 <dt class="text-sm font-medium text-slate-500 truncate">Active Projects</dt>
                                 <dd class="mt-1 text-3xl font-semibold tracking-tight text-slate-900" id="metric-projects">240</dd>
                             </div>
-                            <div class="bg-white px-4 py-5 shadow-sm rounded-lg border border-slate-200 overflow-hidden sm:p-6">
+                            <div class="bg-white px-4 py-5 shadow-sm rounded-lg border border-slate-200 overflow-hidden sm:p-6 relative">
                                 <dt class="text-sm font-medium text-slate-500 truncate">Synapse Events (24h)</dt>
                                 <dd class="mt-1 text-3xl font-semibold tracking-tight text-indigo-600" id="metric-events">960</dd>
+                                <div class="absolute bottom-0 left-0 right-0 h-8 flex items-end justify-between px-2 gap-1 opacity-20" id="sparkline-container">
+                                    <!-- Sparkline bars will be injected here -->
+                                </div>
                             </div>
                             <div class="bg-white px-4 py-5 shadow-sm rounded-lg border border-slate-200 overflow-hidden sm:p-6">
                                 <dt class="text-sm font-medium text-slate-500 truncate">Compliance Score</dt>
@@ -149,11 +152,36 @@
             window.requestAnimationFrame(step);
         }
 
+        // Sparkline Tracker
+        const sparklineData = new Array(20).fill(0);
+        
+        function updateSparkline() {
+            const container = document.getElementById("sparkline-container");
+            container.innerHTML = '';
+            
+            const maxVal = Math.max(...sparklineData, 1);
+            
+            sparklineData.forEach(val => {
+                const heightPct = Math.floor((val / maxVal) * 100);
+                const bar = document.createElement("div");
+                bar.className = "flex-1 bg-indigo-600 rounded-t-sm transition-all duration-300";
+                bar.style.height = `${heightPct}%`;
+                container.appendChild(bar);
+            });
+            
+            // Shift array, append 0 for next tick
+            sparklineData.shift();
+            sparklineData.push(0);
+        }
+
         // Initialize
         document.addEventListener("DOMContentLoaded", () => {
             fetchAnalytics();
             // Poll every 5 seconds
             setInterval(fetchAnalytics, 5000);
+            
+            // Tick sparkline every 1 second
+            setInterval(updateSparkline, 1000);
             
             // Connect to Live Feed
             connectLiveFeed();
@@ -175,6 +203,9 @@
             };
 
             ws.onmessage = (event) => {
+                // Increment current second bucket
+                sparklineData[19] += 1;
+
                 const data = JSON.parse(event.data);
                 
                 // Remove connection notice if present

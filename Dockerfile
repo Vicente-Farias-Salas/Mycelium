@@ -1,35 +1,63 @@
-# Use an official Python runtime as a parent image
-FROM python:3.12-slim
+# ==========================================
+# STAGE 1: Builder
+# ==========================================
+FROM python:3.12-slim AS builder
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV MYCELIUM_ENV=production
-ENV MYCELIUM_DB_PATH=/app/data/micelio.db
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Set work directory
-WORKDIR /app
+WORKDIR /build
 
-# Install system dependencies
+# Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy packaging files
-COPY pyproject.toml .
+# Copy pyproject.toml and source code
+COPY pyproject.toml ./
+COPY src/ ./src/
 
-# Install dependencies directly using pip (or pip install .)
-RUN pip install --upgrade pip
-RUN pip install -e .
+# Build the pip wheel
+RUN pip install hatchling build && python -m build
 
-# Copy the rest of the application
-COPY src/ src/
+# ==========================================
+# STAGE 2: Runtime
+# ==========================================
+FROM python:3.12-slim AS runtime
 
-# Expose port
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    MYCELIUM_ENV=production \
+    MYCELIUM_DB_PATH=/app/data/micelio.db
+
+# Create a non-root user
+RUN groupadd -r mycelium && useradd -r -g mycelium mycelium
+
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy the built wheel from the builder stage
+COPY --from=builder /build/dist/*.whl ./
+
+# Install the application wheel
+RUN pip install --no-cache-dir ./*.whl
+
+# Ensure database and workspaces directories exist and have proper permissions
+RUN mkdir -p /app/data /app/workspaces && \
+    chown -R mycelium:mycelium /app
+
+USER mycelium
+
+# Expose FastAPI default port
 EXPOSE 8000
 
-# Ensure data directory exists
-RUN mkdir -p /app/data
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
 
-# Run the FastAPI application using Uvicorn
-CMD ["uvicorn", "micelio.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start the application using uvicorn (optimized with workers)
+CMD ["uvicorn", "micelio.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4", "--proxy-headers"]

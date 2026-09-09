@@ -8,4 +8,8 @@ dist/
 build/
 *.egg-info/
 .env
+data/
+*.db
+*.db-wal
+*.db-shm
 proyectos_workspace/

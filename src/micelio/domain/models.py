@@ -7,13 +7,15 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class DepartmentEnum(str, Enum):
-    """Company departments."""
+    """Company departments (8 strategic enterprise areas)."""
     ENGINEERING = "ENGINEERING"
     PRODUCT = "PRODUCT"
     DATA = "DATA"
     QA = "QA"
     DESIGN = "DESIGN"
     OPERATIONS = "OPERATIONS"
+    COMMERCIAL = "COMMERCIAL"
+    CUSTOMER_SUCCESS = "CUSTOMER_SUCCESS"
 
 
 class ProjectStatus(str, Enum):

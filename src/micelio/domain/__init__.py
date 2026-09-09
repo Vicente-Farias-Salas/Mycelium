@@ -1,5 +1,6 @@
 """Domain package for Proyecto Micelio."""
 
+from micelio.domain.billing import SubscriptionTier, Tenant, TenantQuotaManager
 from micelio.domain.models import (
     AgentProfile,
     DepartmentEnum,
@@ -23,7 +24,10 @@ __all__ = [
     "NutrientPackage",
     "ProjectMembership",
     "ProjectStatus",
+    "SubscriptionTier",
     "SynapseEvent",
     "SynapseEventType",
+    "Tenant",
+    "TenantQuotaManager",
     "TriadBriefing",
 ]

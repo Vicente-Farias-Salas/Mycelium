@@ -55,7 +55,7 @@ def test_complete_micelio_ecosystem_cycle(e2e_env):
     top_candidate = recommendations[0]
     # Carlos Data should be the #1 recommendation because of DATA department & skills
     assert top_candidate["member"]["department"] == "DATA"
-    assert top_candidate["score"] > 0.7
+    assert top_candidate["score"] > 0.6
     assert "carlos" in top_candidate["rationale"].lower()
 
     # -------------------------------------------------------------

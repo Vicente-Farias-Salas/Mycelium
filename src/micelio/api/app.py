@@ -1,28 +1,35 @@
-"""FastAPI application for Proyecto Micelio SaaS platform."""
+"""FastAPI application for Proyecto Micelio SaaS platform with SQLite WAL & WebSockets."""
 
+import asyncio
 from pathlib import Path
 from typing import Any
 import uuid
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field
 
 from micelio.agent.workspace_bootstrapper import WorkspaceBootstrapper
 from micelio.core.synapse_bus import SynapseBus
 from micelio.domain.models import (
-    AgentProfile,
     DepartmentEnum,
     LivingProject,
-    Member,
     MembershipStatus,
     NutrientPackage,
+    ProjectMembership,
     ProjectStatus,
     SynapseEvent,
     SynapseEventType,
     TriadBriefing,
 )
-from micelio.services.membership_service import MembershipService
 from micelio.services.team_optimizer import TeamOptimizer
+from micelio.simulation.company_roster import get_40_employee_roster
+from micelio.storage.database import DatabaseManager
+from micelio.storage.repositories import (
+    SqliteEventRepository,
+    SqliteMembershipRepository,
+    SqliteNutrientRepository,
+    SqliteProjectRepository,
+)
 
 
 class ProjectCreateRequest(BaseModel):
@@ -66,60 +73,15 @@ class SynapseEventRequest(BaseModel):
     payload: dict[str, Any] = Field(default_factory=dict)
 
 
-def _seed_company_pool() -> tuple[tuple[Member, AgentProfile], ...]:
-    """Seed sample organizational members and their agents."""
-    return (
-        (
-            Member(
-                id="mem-carlos",
-                name="Carlos Data",
-                email="carlos@empresa.com",
-                department=DepartmentEnum.DATA,
-            ),
-            AgentProfile(
-                agent_id="agt-carlos",
-                member_id="mem-carlos",
-                capabilities=("python", "fastapi", "data_pipelines", "clickhouse", "iot"),
-                workload_pct=25.0,
-            ),
-        ),
-        (
-            Member(
-                id="mem-andrea",
-                name="Andrea Frontend",
-                email="andrea@empresa.com",
-                department=DepartmentEnum.ENGINEERING,
-            ),
-            AgentProfile(
-                agent_id="agt-andrea",
-                member_id="mem-andrea",
-                capabilities=("typescript", "react", "nextjs", "tailwind", "ui-craft"),
-                workload_pct=35.0,
-            ),
-        ),
-        (
-            Member(
-                id="mem-dev",
-                name="Vicente Architect",
-                email="vicente@empresa.com",
-                department=DepartmentEnum.ENGINEERING,
-            ),
-            AgentProfile(
-                agent_id="agt-dev",
-                member_id="mem-dev",
-                capabilities=("python", "typescript", "fastapi", "react", "c++", "tdd"),
-                workload_pct=15.0,
-            ),
-        ),
-    )
-
-
-def create_app(workspace_base_dir: Path | str = "proyectos") -> FastAPI:
-    """Create and configure the FastAPI application."""
+def create_app(
+    workspace_base_dir: Path | str = "proyectos",
+    db_path: Path | str = "data/micelio.db",
+) -> FastAPI:
+    """Create and configure the FastAPI application backed by SQLite WAL storage."""
     app = FastAPI(
         title="Proyecto Micelio API",
         description="SaaS de Orquestación Colaborativa A2A con Oficina Virtual de Agentes",
-        version="0.1.0",
+        version="0.2.0",
     )
 
     app.add_middleware(
@@ -130,17 +92,23 @@ def create_app(workspace_base_dir: Path | str = "proyectos") -> FastAPI:
         allow_headers=["*"],
     )
 
-    # State instances
+    # Initialize Storage & Core Services
+    db_manager = DatabaseManager(db_path=db_path)
+    db_manager.initialize_schema()
+
+    project_repo = SqliteProjectRepository(db_manager)
+    nutrient_repo = SqliteNutrientRepository(db_manager)
+    membership_repo = SqliteMembershipRepository(db_manager)
+    event_repo = SqliteEventRepository(db_manager)
+
     bus = SynapseBus()
-    membership_service = MembershipService()
     team_optimizer = TeamOptimizer()
     bootstrapper = WorkspaceBootstrapper(base_dir=workspace_base_dir)
 
-    projects: dict[str, LivingProject] = {}
-    nutrients: dict[str, NutrientPackage] = {}
+    # In-memory index for optimizer search parameters
     project_skills: dict[str, tuple[str, ...]] = {}
     project_depts: dict[str, DepartmentEnum | None] = {}
-    company_pool = _seed_company_pool()
+    company_pool = get_40_employee_roster()
 
     @app.post("/api/projects", status_code=201)
     async def create_project(req: ProjectCreateRequest) -> LivingProject:
@@ -159,15 +127,16 @@ def create_app(workspace_base_dir: Path | str = "proyectos") -> FastAPI:
             interfaces=req.interfaces,
             constraints=req.constraints,
         )
-        projects[project_id] = project
-        nutrients[project_id] = nutrient
+        project_repo.save(project)
+        nutrient_repo.save(nutrient)
         project_skills[project_id] = req.required_skills
         project_depts[project_id] = req.target_department
         return project
 
     @app.get("/api/projects/{project_id}/recommend-team")
     async def recommend_team(project_id: str) -> list[dict[str, Any]]:
-        if project_id not in projects:
+        project = project_repo.get_by_id(project_id)
+        if not project:
             raise HTTPException(status_code=404, detail="Project not found")
         skills = project_skills.get(project_id, ())
         dept = project_depts.get(project_id)
@@ -175,72 +144,73 @@ def create_app(workspace_base_dir: Path | str = "proyectos") -> FastAPI:
             pool=company_pool,
             required_skills=skills,
             target_department=dept,
-            limit=3,
+            limit=5,
         )
         return [r.model_dump() for r in recommendations]
 
     @app.post("/api/projects/{project_id}/dispatch")
     async def dispatch_invite(project_id: str, req: DispatchInviteRequest) -> dict[str, Any]:
-        if project_id not in projects:
+        project = project_repo.get_by_id(project_id)
+        if not project:
             raise HTTPException(status_code=404, detail="Project not found")
-        invite = membership_service.create_invitation(
+
+        membership_id = f"mem-{uuid.uuid4().hex[:8]}"
+        invite = ProjectMembership(
+            id=membership_id,
             project_id=project_id,
             member_id=req.member_id,
-            role=req.role,
+            role_in_project=req.role,
+            status=MembershipStatus.INVITED,
         )
-        # Update project status to DISPATCHED
-        projects[project_id] = projects[project_id].model_copy(
-            update={"status": ProjectStatus.DISPATCHED}
-        )
+        membership_repo.save(invite)
+        project_repo.update_status(project_id, ProjectStatus.DISPATCHED)
         return invite.model_dump()
 
     @app.post("/api/invites/{membership_id}/respond")
     async def respond_to_invite(membership_id: str, req: InviteResponseRequest) -> dict[str, Any]:
-        try:
-            if req.action.lower() == "decline":
-                declined = membership_service.decline_invitation(membership_id)
-                return declined.model_dump()
+        invite = membership_repo.get_by_id(membership_id)
+        if not invite:
+            raise HTTPException(status_code=404, detail="Membership not found")
 
-            # Accept flow: trigger local workspace bootstrap
-            # Find the project
-            memberships = [
-                m for m in membership_service._memberships.values() if m.id == membership_id
-            ]
-            if not memberships:
-                raise HTTPException(status_code=404, detail="Membership not found")
-            m_obj = memberships[0]
-            project = projects[m_obj.project_id]
-            nutrient = nutrients[m_obj.project_id]
+        if req.action.lower() == "decline":
+            membership_repo.update_status_and_path(membership_id, MembershipStatus.DECLINED, "")
+            updated = membership_repo.get_by_id(membership_id)
+            return updated.model_dump() if updated else {}
 
-            briefing = TriadBriefing(
-                what_arrived=nutrient.distilled_specs,
-                what_was_done=f"Proyecto concebido por {project.creator_id}. Requerimientos y contratos definidos.",
-                what_to_do=f"Configurar entorno para el rol '{m_obj.role_in_project}', validar contratos e implementar solución.",
-            )
+        # Accept flow
+        project = project_repo.get_by_id(invite.project_id)
+        nutrient = nutrient_repo.get_by_project_id(invite.project_id)
+        if not project or not nutrient:
+            raise HTTPException(status_code=404, detail="Project context not found")
 
-            created_dir = bootstrapper.bootstrap_project(
-                project=project,
-                nutrient=nutrient,
-                briefing=briefing,
-                project_slug=req.project_slug,
-            )
+        briefing = TriadBriefing(
+            what_arrived=nutrient.distilled_specs,
+            what_was_done=f"Proyecto formulado por {project.creator_id}. Contratos y especificaciones acordados.",
+            what_to_do=f"Configurar workspace para rol '{invite.role_in_project}', co-trabajar con agentes de la oficina.",
+        )
 
-            accepted = membership_service.accept_invitation(
-                membership_id=membership_id,
-                local_workspace_path=str(created_dir),
-            )
-            # Mark project active office
-            projects[project.id] = projects[project.id].model_copy(
-                update={"status": ProjectStatus.ACTIVE_OFFICE}
-            )
-            return accepted.model_dump()
-        except KeyError as err:
-            raise HTTPException(status_code=404, detail=str(err)) from err
+        created_dir = bootstrapper.bootstrap_project(
+            project=project,
+            nutrient=nutrient,
+            briefing=briefing,
+            project_slug=req.project_slug,
+        )
+
+        membership_repo.update_status_and_path(
+            membership_id=membership_id,
+            status=MembershipStatus.JOINED,
+            workspace_path=str(created_dir),
+        )
+        project_repo.update_status(project.id, ProjectStatus.ACTIVE_OFFICE)
+        updated = membership_repo.get_by_id(membership_id)
+        return updated.model_dump() if updated else {}
 
     @app.post("/api/projects/{project_id}/events", status_code=201)
     async def emit_office_event(project_id: str, req: SynapseEventRequest) -> dict[str, Any]:
-        if project_id not in projects:
+        project = project_repo.get_by_id(project_id)
+        if not project:
             raise HTTPException(status_code=404, detail="Project not found")
+
         event = SynapseEvent(
             event_id=f"evt-{uuid.uuid4().hex[:8]}",
             project_id=project_id,
@@ -249,26 +219,68 @@ def create_app(workspace_base_dir: Path | str = "proyectos") -> FastAPI:
             event_type=req.event_type,
             payload=req.payload,
         )
+        event_repo.save(event)
         await bus.publish(event)
         return event.model_dump()
 
     @app.get("/api/projects/{project_id}/events")
     async def get_office_events(project_id: str) -> list[dict[str, Any]]:
-        if project_id not in projects:
+        project = project_repo.get_by_id(project_id)
+        if not project:
             raise HTTPException(status_code=404, detail="Project not found")
-        history = bus.get_project_history(project_id)
-        return [e.model_dump() for e in history]
+        events = event_repo.get_by_project(project_id)
+        return [e.model_dump() for e in events]
 
     @app.get("/api/projects/{project_id}/status")
     async def get_project_status(project_id: str) -> dict[str, Any]:
-        if project_id not in projects:
+        project = project_repo.get_by_id(project_id)
+        if not project:
             raise HTTPException(status_code=404, detail="Project not found")
-        project = projects[project_id]
-        members = membership_service.get_project_members(project_id)
+        members = membership_repo.get_by_project(project_id)
         return {
             "project": project.model_dump(),
             "members": [m.model_dump() for m in members],
             "active_in_office": sum(1 for m in members if m.status == MembershipStatus.JOINED),
         }
+
+    @app.websocket("/ws/projects/{project_id}/office")
+    async def office_websocket_endpoint(
+        websocket: WebSocket,
+        project_id: str,
+        agent_id: str = Query(default="agt-observer"),
+    ) -> None:
+        """Stream real-time office events directly to connected agent or human client."""
+        await websocket.accept()
+        queue: asyncio.Queue[SynapseEvent] = asyncio.Queue()
+
+        async def _event_handler(event: SynapseEvent) -> None:
+            await queue.put(event)
+
+        bus.subscribe(project_id=project_id, agent_id=agent_id, callback=_event_handler)
+        try:
+            while True:
+                # Wait for next event or keepalive check
+                get_task = asyncio.create_task(queue.get())
+                recv_task = asyncio.create_task(websocket.receive_text())
+                done, pending = await asyncio.wait(
+                    [get_task, recv_task],
+                    return_when=asyncio.FIRST_COMPLETED,
+                )
+                for t in pending:
+                    t.cancel()
+
+                if get_task in done:
+                    event = get_task.result()
+                    payload = event.model_dump()
+                    # Serialize datetime to ISO string
+                    payload["timestamp"] = event.timestamp.isoformat()
+                    await websocket.send_json(payload)
+                if recv_task in done:
+                    # Client sent a message, keepalive or query
+                    _ = recv_task.result()
+        except WebSocketDisconnect:
+            pass
+        finally:
+            bus.unsubscribe(project_id=project_id, agent_id=agent_id)
 
     return app

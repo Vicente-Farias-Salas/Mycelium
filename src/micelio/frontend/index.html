@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mycelium Enterprise Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased">
+    <div class="min-h-screen flex flex-col">
+        <!-- Top Navigation -->
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+            <div class="px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <span class="text-2xl font-bold tracking-tighter text-indigo-600">Mycelium</span>
+                        </div>
+                        <nav class="hidden md:block ml-10">
+                            <ul class="flex space-x-8">
+                                <li><a href="#" class="text-indigo-600 font-medium px-3 py-2 rounded-md bg-indigo-50">Virtual Office</a></li>
+                                <li><a href="#" class="text-slate-500 hover:text-slate-900 font-medium px-3 py-2">Projects</a></li>
+                                <li><a href="#" class="text-slate-500 hover:text-slate-900 font-medium px-3 py-2">Compliance</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="flex items-center">
+                        <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium shadow-sm transition-colors">
+                            Simulate Crunch
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Left Column: Metrics -->
+                <div class="lg:col-span-2 space-y-8">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Network Telemetry</h2>
+                        <dl class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-3">
+                            <div class="bg-white px-4 py-5 shadow-sm rounded-lg border border-slate-200 overflow-hidden sm:p-6">
+                                <dt class="text-sm font-medium text-slate-500 truncate">Active Projects</dt>
+                                <dd class="mt-1 text-3xl font-semibold tracking-tight text-slate-900" id="metric-projects">240</dd>
+                            </div>
+                            <div class="bg-white px-4 py-5 shadow-sm rounded-lg border border-slate-200 overflow-hidden sm:p-6">
+                                <dt class="text-sm font-medium text-slate-500 truncate">Synapse Events (24h)</dt>
+                                <dd class="mt-1 text-3xl font-semibold tracking-tight text-indigo-600" id="metric-events">960</dd>
+                            </div>
+                            <div class="bg-white px-4 py-5 shadow-sm rounded-lg border border-slate-200 overflow-hidden sm:p-6">
+                                <dt class="text-sm font-medium text-slate-500 truncate">Compliance Score</dt>
+                                <dd class="mt-1 text-3xl font-semibold tracking-tight text-emerald-600">99.9%</dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <!-- Project List -->
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Active Agent Swarms</h2>
+                        <div class="mt-4 bg-white shadow-sm border border-slate-200 rounded-lg overflow-hidden">
+                            <ul role="list" class="divide-y divide-slate-200" id="project-list">
+                                <!-- Dummy entries to show UI -->
+                                <li class="px-6 py-4 hover:bg-slate-50">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-indigo-600 truncate">PRJ-COMMERCIAL-001</p>
+                                            <p class="mt-1 text-xs text-slate-500">Cross-department initiative</p>
+                                        </div>
+                                        <div class="flex items-center gap-2 text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">
+                                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> ACTIVE
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="px-6 py-4 hover:bg-slate-50">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-indigo-600 truncate">PRJ-ENGINEERING-012</p>
+                                            <p class="mt-1 text-xs text-slate-500">Infrastructure refactoring</p>
+                                        </div>
+                                        <div class="flex items-center gap-2 text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">
+                                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> ACTIVE
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Live Feed -->
+                <div class="space-y-8">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Synapse Live Feed</h2>
+                        <div class="mt-4 bg-white shadow-sm border border-slate-200 rounded-lg p-4 h-[600px] overflow-y-auto">
+                            <div class="space-y-4" id="live-feed">
+                                <div class="p-3 bg-slate-50 rounded-lg border border-slate-100 text-sm">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="font-semibold text-indigo-600">agt-engineering-1</span>
+                                        <span class="text-xs text-slate-400">just now</span>
+                                    </div>
+                                    <p class="text-slate-700">Refactoring module for concurrency limits completed.</p>
+                                </div>
+                                <div class="p-3 bg-slate-50 rounded-lg border border-slate-100 text-sm">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="font-semibold text-emerald-600">agt-compliance-2</span>
+                                        <span class="text-xs text-slate-400">2m ago</span>
+                                    </div>
+                                    <p class="text-slate-700">Audit pass successful. No PII leaks detected.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

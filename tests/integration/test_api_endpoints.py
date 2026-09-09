@@ -171,3 +171,10 @@ def test_audit_project_endpoint(client: TestClient):
     assert audit_data["is_compliant"] is False
     assert len(audit_data["findings"]) == 1
     assert audit_data["findings"][0]["severity"] == "HIGH"
+
+
+def test_frontend_portal(client: TestClient):
+    """Verify that the frontend portal is mounted and returns 200."""
+    response = client.get("/portal/")
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]

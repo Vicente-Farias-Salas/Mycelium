@@ -6,6 +6,7 @@ from typing import Any
 import uuid
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
 from micelio.agent.workspace_bootstrapper import WorkspaceBootstrapper
@@ -91,6 +92,10 @@ def create_app(
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    
+    frontend_dir = Path(__file__).parent.parent / "frontend"
+    if frontend_dir.exists():
+        app.mount("/portal", StaticFiles(directory=str(frontend_dir), html=True), name="portal")
 
     # Initialize Storage & Core Services
     db_manager = DatabaseManager(db_path=db_path)

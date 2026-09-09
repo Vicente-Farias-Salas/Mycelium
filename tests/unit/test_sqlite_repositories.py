@@ -135,3 +135,12 @@ def test_synapse_event_repository(db_manager: DatabaseManager, sample_project: L
     assert len(events) == 1
     assert events[0].event_id == "evt-db-1"
     assert events[0].payload["contract"] == "order_book_v2"
+
+def test_schema_indexes_created(db_manager: DatabaseManager):
+    """Verify that performance indexes exist in the schema."""
+    query = "SELECT name FROM sqlite_master WHERE type='index';"
+    with db_manager.get_connection() as conn:
+        indexes = [row["name"] for row in conn.execute(query).fetchall()]
+    assert "idx_memberships_project_id" in indexes
+    assert "idx_events_project_id" in indexes
+    assert "idx_events_timestamp" in indexes

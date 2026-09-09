@@ -64,5 +64,9 @@ class DatabaseManager:
                     timestamp TEXT NOT NULL,
                     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
                 );
+                
+                CREATE INDEX IF NOT EXISTS idx_memberships_project_id ON memberships(project_id);
+                CREATE INDEX IF NOT EXISTS idx_events_project_id ON synapse_events(project_id);
+                CREATE INDEX IF NOT EXISTS idx_events_timestamp ON synapse_events(timestamp);
                 """
             )

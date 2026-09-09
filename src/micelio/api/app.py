@@ -136,6 +136,8 @@ def create_app(
     from micelio.domain.billing import TenantQuotaManager, Tenant, SubscriptionTier
     quota_manager = TenantQuotaManager()
     bootstrapper = WorkspaceBootstrapper(base_dir=actual_workspace_dir)
+    from micelio.services.contract_validator import ContractValidator, ContractViolationError
+    contract_validator = ContractValidator()
     
     # Pre-register the default tenant for existing tests
     quota_manager.register_tenant(Tenant(
@@ -292,6 +294,11 @@ def create_app(
             global_rate_limiter.check_and_record(req.source_agent_id)
         except RateLimitExceededError as e:
             raise HTTPException(status_code=429, detail=str(e))
+
+        try:
+            contract_validator.validate_event(project, req)
+        except ContractViolationError as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
         event = SynapseEvent(
             event_id=f"evt-{uuid.uuid4().hex[:8]}",

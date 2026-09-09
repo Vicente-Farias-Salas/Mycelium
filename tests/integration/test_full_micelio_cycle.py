@@ -13,6 +13,8 @@ def e2e_env(tmp_path: Path):
     """Fixture with test client and dedicated workspace directory."""
     workspace_dir = tmp_path / "e2e_workspaces"
     app = create_app(workspace_base_dir=workspace_dir)
+    from micelio.core.security import verify_api_key
+    app.dependency_overrides[verify_api_key] = lambda: "test"
     client = TestClient(app)
     return client, workspace_dir
 

@@ -14,6 +14,8 @@ def ws_client(tmp_path) -> TestClient:
         workspace_base_dir=tmp_path / "ws_workspaces",
         db_path=tmp_path / "ws_micelio.db",
     )
+    from micelio.core.security import verify_api_key
+    app.dependency_overrides[verify_api_key] = lambda: "test"
     return TestClient(app)
 
 

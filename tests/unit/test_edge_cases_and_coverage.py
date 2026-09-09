@@ -106,6 +106,8 @@ def test_api_404_branches_and_decline(tmp_path: Path):
         workspace_base_dir=tmp_path / "workspaces",
         db_path=tmp_path / "api_edge.db",
     )
+    from micelio.core.security import verify_api_key
+    app.dependency_overrides[verify_api_key] = lambda: "test"
     client = TestClient(app)
 
     # 404 tests on non-existent project
@@ -143,6 +145,8 @@ def test_websocket_client_messaging(tmp_path: Path):
         workspace_base_dir=tmp_path / "workspaces",
         db_path=tmp_path / "ws_msg.db",
     )
+    from micelio.core.security import verify_api_key
+    app.dependency_overrides[verify_api_key] = lambda: "test"
     client = TestClient(app)
 
     create_res = client.post(

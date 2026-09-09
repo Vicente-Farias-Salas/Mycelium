@@ -133,7 +133,10 @@ def create_app(
     project_depts: dict[str, DepartmentEnum | None] = {}
     company_pool = get_40_employee_roster()
 
-    @app.post("/api/projects", status_code=201)
+    from micelio.core.security import verify_api_key
+    from fastapi import Depends
+
+    @app.post("/api/projects", status_code=201, dependencies=[Depends(verify_api_key)])
     async def create_project(req: ProjectCreateRequest) -> LivingProject:
         project_id = f"proj-{uuid.uuid4().hex[:8]}"
         project = LivingProject(
@@ -247,7 +250,7 @@ def create_app(
         except WebSocketDisconnect:
             global_ws_connections.remove(websocket)
 
-    @app.post("/api/projects/{project_id}/events", status_code=201)
+    @app.post("/api/projects/{project_id}/events", status_code=201, dependencies=[Depends(verify_api_key)])
     async def emit_office_event(project_id: str, req: SynapseEventRequest) -> dict[str, Any]:
         project = project_repo.get_by_id(project_id)
         if not project:

@@ -5,12 +5,16 @@ import pytest
 
 from micelio.api.app import create_app
 from micelio.domain.models import DepartmentEnum, ProjectStatus
+from micelio.core.security import verify_api_key
 
 
 @pytest.fixture
 def client(tmp_path) -> TestClient:
     """Fixture providing test client configured with a temporary workspace."""
-    app = create_app(workspace_base_dir=tmp_path / "workspaces")
+    ws_dir = tmp_path / "workspaces"
+    ws_dir.mkdir()
+    app = create_app(workspace_base_dir=ws_dir, db_path=tmp_path / "micelio.db")
+    app.dependency_overrides[verify_api_key] = lambda: "test"
     return TestClient(app)
 
 

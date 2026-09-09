@@ -11,6 +11,9 @@ class AppConfig(BaseModel):
     env: str = Field(default_factory=lambda: os.getenv("MYCELIUM_ENV", "development"))
     debug: bool = Field(default_factory=lambda: os.getenv("MYCELIUM_DEBUG", "True").lower() in ("true", "1", "yes"))
     
+    # Security
+    api_key: str = Field(default_factory=lambda: os.getenv("MYCELIUM_API_KEY", "default_dev_key_super_secret"))
+    
     # Storage
     db_path: str = Field(default_factory=lambda: os.getenv("MYCELIUM_DB_PATH", "data/micelio.db"))
     workspace_base_dir: str = Field(default_factory=lambda: os.getenv("MYCELIUM_WORKSPACE_DIR", "proyectos"))

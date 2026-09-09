@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from micelio.core.config import config
 from micelio.core.metrics import metrics_middleware, get_metrics_response, SYNAPSE_EVENTS_EMITTED
+from micelio.core.logger import logger
 
 from micelio.agent.workspace_bootstrapper import WorkspaceBootstrapper
 from micelio.core.synapse_bus import SynapseBus
@@ -86,6 +87,8 @@ def create_app(
     actual_workspace_dir = workspace_base_dir or config.workspace_base_dir
     actual_db_path = db_path or config.db_path
     
+    logger.info("Initializing Mycelium Enterprise API", extra={"extra_ctx": {"env": config.env}})
+    
     app = FastAPI(
         title="Mycelium API",
         description="SaaS Enterprise de Orquestación Colaborativa A2A con Oficina Virtual de Agentes",
@@ -112,6 +115,7 @@ def create_app(
         app.mount("/portal", StaticFiles(directory=str(frontend_dir), html=True), name="portal")
 
     # Initialize Storage & Core Services
+    logger.info("Bootstrapping Storage and Repositories", extra={"extra_ctx": {"db_path": str(actual_db_path)}})
     db_manager = DatabaseManager(db_path=actual_db_path)
     db_manager.initialize_schema()
 
@@ -265,8 +269,19 @@ def create_app(
         event_repo.save(event)
         await bus.publish(event)
         
-        # Track metric
+        # Track metric and log
         SYNAPSE_EVENTS_EMITTED.labels(event_type=req.event_type.name).inc()
+        logger.info(
+            "Synapse Event emitted", 
+            extra={
+                "extra_ctx": {
+                    "event_id": event.event_id,
+                    "source": req.source_agent_id,
+                    "target": req.target_agent_id,
+                    "type": req.event_type.value
+                }
+            }
+        )
         
         # Broadcast to dashboard
         event_dict = event.model_dump()

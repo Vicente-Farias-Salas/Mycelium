@@ -233,3 +233,33 @@ def test_analytics_overview_endpoint(client: TestClient):
     assert "total_projects" in data
     assert data["total_projects"] > 0
     assert "total_events" in data
+
+def test_global_analytics_live_feed(client: TestClient):
+    """Verify that the global websocket receives events."""
+    proj_res = client.post(
+        "/api/projects",
+        json={
+            "title": "WS Test",
+            "vision": "Check WS",
+            "creator_id": "mem-1",
+            "distilled_specs": "Spec",
+            "required_skills": ["python"],
+        },
+    )
+    project_id = proj_res.json()["id"]
+
+    with client.websocket_connect("/ws/analytics/live") as websocket:
+        # Emit an event to trigger a broadcast
+        client.post(
+            f"/api/projects/{project_id}/events",
+            json={
+                "event_type": "AGENT_QUERY",
+                "source_agent_id": "test-ws-agent",
+                "target_agent_id": "BROADCAST",
+                "payload": {"status": "testing_ws"},
+            },
+        )
+        # We should receive the event on the websocket
+        data = websocket.receive_json()
+        assert data["source_agent_id"] == "test-ws-agent"
+        assert data["payload"]["status"] == "testing_ws"

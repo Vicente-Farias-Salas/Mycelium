@@ -154,7 +154,71 @@
             fetchAnalytics();
             // Poll every 5 seconds
             setInterval(fetchAnalytics, 5000);
+            
+            // Connect to Live Feed
+            connectLiveFeed();
         });
+
+        function connectLiveFeed() {
+            const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+            const wsUrl = `${protocol}//${window.location.host}/ws/analytics/live`;
+            const ws = new WebSocket(wsUrl);
+            const feedContainer = document.getElementById("live-feed");
+            
+            // Clear dummy data on connection
+            ws.onopen = () => {
+                feedContainer.innerHTML = '';
+                const notice = document.createElement("div");
+                notice.className = "p-3 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium text-center";
+                notice.innerText = "Connected to SynapseBus Live Feed...";
+                feedContainer.appendChild(notice);
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                // Remove connection notice if present
+                if (feedContainer.firstElementChild && feedContainer.firstElementChild.innerText.includes("Connected to")) {
+                    feedContainer.innerHTML = '';
+                }
+
+                const item = document.createElement("div");
+                item.className = "p-3 bg-slate-50 rounded-lg border border-slate-100 text-sm animate-fade-in";
+                
+                // Colorize based on target
+                let titleColor = "text-indigo-600";
+                if (data.event_type === "STATE_MUTATION") titleColor = "text-emerald-600";
+                if (data.event_type === "AGENT_ERROR") titleColor = "text-rose-600";
+
+                item.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-semibold ${titleColor}">${data.source_agent_id} &rarr; ${data.target_agent_id}</span>
+                        <span class="text-xs text-slate-400">just now</span>
+                    </div>
+                    <p class="text-slate-700 break-words font-mono text-xs mt-2">${JSON.stringify(data.payload)}</p>
+                `;
+                
+                feedContainer.prepend(item);
+                
+                // Keep max 50 items
+                if (feedContainer.children.length > 50) {
+                    feedContainer.removeChild(feedContainer.lastChild);
+                }
+            };
+
+            ws.onclose = () => {
+                setTimeout(connectLiveFeed, 3000);
+            };
+        }
     </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+    </style>
 </body>
 </html>

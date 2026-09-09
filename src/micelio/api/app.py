@@ -223,6 +223,19 @@ def create_app(
         window_seconds=config.rate_limit_window_seconds
     )
 
+    global_ws_connections: list[WebSocket] = []
+
+    @app.websocket("/ws/analytics/live")
+    async def global_analytics_live_feed(websocket: WebSocket):
+        """Global websocket for the dashboard to view all office events."""
+        await websocket.accept()
+        global_ws_connections.append(websocket)
+        try:
+            while True:
+                await websocket.receive_text()
+        except WebSocketDisconnect:
+            global_ws_connections.remove(websocket)
+
     @app.post("/api/projects/{project_id}/events", status_code=201)
     async def emit_office_event(project_id: str, req: SynapseEventRequest) -> dict[str, Any]:
         project = project_repo.get_by_id(project_id)
@@ -244,6 +257,17 @@ def create_app(
         )
         event_repo.save(event)
         await bus.publish(event)
+        
+        # Broadcast to dashboard
+        event_dict = event.model_dump()
+        event_dict["timestamp"] = event.timestamp.isoformat()
+        
+        for ws in list(global_ws_connections):
+            try:
+                await ws.send_json(event_dict)
+            except Exception:
+                pass
+                
         return event.model_dump()
 
     @app.get("/api/projects/{project_id}/events")

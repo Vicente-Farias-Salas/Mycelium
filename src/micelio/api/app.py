@@ -4,7 +4,7 @@ import asyncio
 from pathlib import Path
 from typing import Any
 import uuid
-from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect, BackgroundTasks
 from fastapi.responses import ORJSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -122,6 +122,11 @@ def create_app(
     frontend_dir = Path(__file__).parent.parent / "frontend"
     if frontend_dir.exists():
         app.mount("/portal", StaticFiles(directory=str(frontend_dir), html=True), name="portal")
+        app.mount("/dashboard", StaticFiles(directory=str(frontend_dir), html=True), name="dashboard")
+        from fastapi.responses import RedirectResponse
+        @app.get("/", include_in_schema=False)
+        async def root_redirect():
+            return RedirectResponse(url="/dashboard/")
 
     # Initialize Storage & Core Services
     logger.info("Bootstrapping Storage and Repositories", extra={"extra_ctx": {"db_path": str(actual_db_path)}})
@@ -205,6 +210,12 @@ def create_app(
         project_skills[project_id] = req.required_skills
         project_depts[project_id] = req.target_department
         return project
+
+    @app.get("/api/projects")
+    async def list_projects() -> list[dict[str, Any]]:
+        """Return recently active projects for dashboard telemetry."""
+        projects = project_repo.list_all(limit=20)
+        return [p.model_dump() for p in projects]
 
     @app.get("/api/projects/{project_id}/recommend-team")
     async def recommend_team(project_id: str) -> list[dict[str, Any]]:
@@ -466,5 +477,55 @@ def create_app(
         auditor = ComplianceAuditor()
         report = auditor.run_audit(project_id, list(events))
         return report.model_dump()
+
+    @app.post("/api/simulation/demo")
+    async def trigger_demo_simulation(background_tasks: BackgroundTasks) -> dict[str, Any]:
+        """Trigger an animated stream of real-time A2A events for the live dashboard."""
+        async def _run_stream() -> None:
+            demo_pid = "demo-swarm-01"
+            if not project_repo.get_by_id(demo_pid):
+                project_repo.save(LivingProject(
+                    id=demo_pid,
+                    title="Enjambre Autónomo Alfa",
+                    vision="Demostración en vivo de coordinación A2A sobre SynapseBus",
+                    creator_id="agt-supervisor",
+                    status=ProjectStatus.ACTIVE_OFFICE,
+                ))
+            sample_events = [
+                ("agt-supervisor", "agt-arch-01", SynapseEventType.AGENT_QUERY, {"query": "Verificar arquitectura hexagonal y contratos para nuevo enjambre."}),
+                ("agt-arch-01", "agt-sec-02", SynapseEventType.ASSISTANCE_REQUEST, {"need": "Validar rotación de tokens PyJWT y políticas de rate limit."}),
+                ("agt-sec-02", "agt-arch-01", SynapseEventType.ASSISTANCE_FULFILLED, {"status": "APPROVED", "policy": "TokenBucket 100/s + Bearer HMAC-256"}),
+                ("agt-arch-01", "BROADCAST", SynapseEventType.AGENT_CONSENSUS, {"consensus": "Pipeline aprobado. Iniciando despacho a equipo de datos."}),
+                ("agt-data-05", "agt-core-09", SynapseEventType.STATE_MUTATION, {"mutation": "Configuración PRAGMA journal_mode=WAL aplicada en SQLite."}),
+                ("agt-core-09", "agt-supervisor", SynapseEventType.AGENT_RESPONSE, {"throughput": "10,240 ops/sec alcanzadas en benchmark."}),
+                ("agt-audit-01", "BROADCAST", SynapseEventType.STATE_MUTATION, {"compliance": "Auditoría SOC2/GDPR superada al 100%."}),
+                ("agt-ai-worker", "agt-supervisor", SynapseEventType.AGENT_RESPONSE, {"llm": "LiteLLM proxy conectado exitosamente a Claude & GPT-4o."}),
+                ("agt-frontend-03", "BROADCAST", SynapseEventType.OFFICE_CHATTER, {"status": "Sparkline telemetry updated with dynamic canvas rendering."}),
+            ]
+            import orjson
+            for src, tgt, ev_type, payload in sample_events:
+                ev = SynapseEvent(
+                    event_id=f"evt-demo-{uuid.uuid4().hex[:6]}",
+                    project_id="demo-swarm-01",
+                    source_agent_id=src,
+                    target_agent_id=tgt,
+                    event_type=ev_type,
+                    payload=payload,
+                )
+                event_repo.save(ev)
+                await bus.publish(ev)
+                SYNAPSE_EVENTS_EMITTED.labels(event_type=ev_type.name).inc()
+                ev_dict = ev.model_dump()
+                ev_dict["timestamp"] = ev.timestamp.isoformat()
+                b = orjson.dumps(ev_dict).decode("utf-8")
+                for ws in list(global_ws_connections):
+                    try:
+                        await ws.send_text(b)
+                    except Exception:
+                        pass
+                await asyncio.sleep(0.02)
+
+        background_tasks.add_task(_run_stream)
+        return {"status": "started", "message": "Simulation stream dispatched into SynapseBus"}
 
     return app

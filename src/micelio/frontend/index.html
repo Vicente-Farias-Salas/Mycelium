@@ -48,7 +48,7 @@
                         </nav>
                     </div>
                     <div class="flex items-center">
-                        <button class="font-mono bg-cyber-panel border border-cyber-neon text-cyber-neon hover:bg-cyber-neon hover:text-black px-4 py-2 rounded text-xs tracking-wider transition-all duration-300 shadow-[0_0_10px_rgba(0,255,157,0.2)] hover:shadow-[0_0_20px_rgba(0,255,157,0.6)]">
+                        <button id="crunch-btn" onclick="triggerCrunch()" class="font-mono bg-cyber-panel border border-cyber-neon text-cyber-neon hover:bg-cyber-neon hover:text-black px-4 py-2 rounded text-xs tracking-wider transition-all duration-300 shadow-[0_0_10px_rgba(0,255,157,0.2)] hover:shadow-[0_0_20px_rgba(0,255,157,0.6)] cursor-pointer">
                             INIT_CRUNCH()
                         </button>
                     </div>
@@ -199,9 +199,58 @@
             sparklineData.push(0);
         }
 
+        async function fetchProjects() {
+            try {
+                const res = await fetch('/api/projects');
+                if (res.ok) {
+                    const projects = await res.json();
+                    const list = document.getElementById("project-list");
+                    if (projects && projects.length > 0) {
+                        list.innerHTML = '';
+                        projects.slice(0, 8).forEach(p => {
+                            const li = document.createElement("li");
+                            li.className = "px-5 py-4 hover:bg-[#0d1620] transition-colors flex items-center justify-between";
+                            li.innerHTML = `
+                                <div>
+                                    <p class="text-sm font-mono text-cyber-blue">${p.id} — ${p.title}</p>
+                                    <p class="mt-1 text-xs text-cyber-muted font-mono">${(p.vision || '').substring(0, 55)}...</p>
+                                </div>
+                                <div class="flex items-center gap-2 text-xs font-mono text-cyber-neon border border-cyber-neon/30 bg-cyber-neon/5 px-2 py-1 rounded">
+                                    <span class="w-2 h-2 rounded-full bg-cyber-neon animate-pulse"></span> ${p.status}
+                                </div>
+                            `;
+                            list.appendChild(li);
+                        });
+                    }
+                }
+            } catch (e) {
+                // offline fallback
+            }
+        }
+
+        async function triggerCrunch() {
+            const btn = document.getElementById("crunch-btn");
+            if (!btn) return;
+            btn.innerText = "⚡ CRUNCH_ACTIVE...";
+            btn.classList.add("animate-pulse", "!bg-cyber-neon", "!text-black");
+            try {
+                await fetch('/api/simulation/demo', { method: 'POST' });
+            } catch (err) {
+                console.error("Simulation trigger failed:", err);
+            }
+            setTimeout(() => {
+                btn.innerText = "INIT_CRUNCH()";
+                btn.classList.remove("animate-pulse", "!bg-cyber-neon", "!text-black");
+                fetchAnalytics();
+                fetchProjects();
+            }, 3500);
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             fetchAnalytics();
-            setInterval(fetchAnalytics, 5000);
+            fetchProjects();
+            setInterval(fetchAnalytics, 4000);
+            setInterval(fetchProjects, 6000);
             setInterval(updateSparkline, 1000);
             connectLiveFeed();
         });

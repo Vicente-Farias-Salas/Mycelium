@@ -158,3 +158,43 @@ def test_websocket_client_messaging(tmp_path: Path):
     with client.websocket_connect(f"/ws/projects/{pid}/office?agent_id=agt-listener") as ws:
         ws.send_text("heartbeat_ping")
         # Ensure client disconnect is clean
+
+
+def test_list_projects_and_demo_simulation(tmp_path: Path):
+    """Test GET /api/projects and POST /api/simulation/demo."""
+    import time
+    app = create_app(
+        workspace_base_dir=tmp_path / "workspaces",
+        db_path=tmp_path / "sim_demo.db",
+    )
+    from micelio.core.security import verify_api_key
+    app.dependency_overrides[verify_api_key] = lambda: "test"
+    client = TestClient(app)
+
+    # 1. Create a project
+    client.post(
+        "/api/projects",
+        json={"title": "List Test", "vision": "Vision enough to pass validation", "creator_id": "c", "distilled_specs": "Specs enough to pass validation"},
+    )
+
+    # 2. Test GET /api/projects
+    list_res = client.get("/api/projects")
+    assert list_res.status_code == 200
+    projects = list_res.json()
+    assert len(projects) >= 1
+    assert projects[0]["title"] == "List Test"
+
+    # 3. Test root redirect
+    root_res = client.get("/", follow_redirects=False)
+    assert root_res.status_code == 307
+    assert root_res.headers["location"] == "/dashboard/"
+
+    # 4. Connect to global analytics websocket and trigger demo simulation
+    with client.websocket_connect("/ws/analytics/live") as ws:
+        demo_res = client.post("/api/simulation/demo")
+        assert demo_res.status_code == 200
+        assert demo_res.json()["status"] == "started"
+        # Receive at least one streamed event
+        msg = ws.receive_text()
+        assert "evt-demo-" in msg
+

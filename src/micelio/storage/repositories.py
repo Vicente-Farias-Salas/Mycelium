@@ -82,6 +82,24 @@ class SqliteProjectRepository:
         with self._db.get_connection() as conn:
             return conn.execute(query).fetchone()[0]
 
+    def list_all(self, limit: int = 50) -> list[LivingProject]:
+        """Return recently created projects."""
+        query = "SELECT * FROM projects ORDER BY created_at DESC LIMIT ?;"
+        with self._db.get_connection() as conn:
+            rows = conn.execute(query, (limit,)).fetchall()
+            return [
+                LivingProject(
+                    id=row["id"],
+                    title=row["title"],
+                    vision=row["vision"],
+                    creator_id=row["creator_id"],
+                    status=ProjectStatus(row["status"]),
+                    shared_contracts=json.loads(row["shared_contracts_json"]),
+                    created_at=datetime.fromisoformat(row["created_at"]),
+                )
+                for row in rows
+            ]
+
 
 class SqliteNutrientRepository:
     """Repository for NutrientPackage persistence."""

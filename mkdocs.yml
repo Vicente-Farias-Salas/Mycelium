@@ -1,0 +1,19 @@
+site_name: Mycelium Enterprise
+site_description: Enterprise Agent-to-Agent Coordination Substrate
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: teal
+    accent: cyan
+  font:
+    text: Inter
+    code: Fira Code
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Architecture: architecture.md
+  - API Reference: api.md

@@ -8,6 +8,7 @@ help:
 	@echo "run     - Run the local Uvicorn dev server"
 	@echo "build   - Build pip wheel and sdist packages"
 	@echo "clean   - Remove build artifacts and caches"
+	@echo "docs    - Build documentation"
 
 install:
 	python -m pip install --upgrade pip
@@ -26,3 +27,6 @@ build: clean
 clean:
 	rm -rf dist/ build/ *.egg-info .pytest_cache
 	find . -type d -name __pycache__ -exec rm -rf {} +
+
+docs:
+	mkdocs build

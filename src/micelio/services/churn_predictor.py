@@ -14,7 +14,13 @@ class ChurnRiskScore(BaseModel):
 class ChurnPredictor:
     """Calculates heuristic and ML-based churn risks for tenants based on their activity."""
     
-    def calculate_risk(self, tenant: Tenant, recent_events_count: int, support_tickets_count: int) -> ChurnRiskScore:
+    def calculate_risk(
+        self,
+        tenant: Tenant,
+        recent_events_count: int,
+        support_tickets_count: int,
+        failed_audits_count: int = 0
+    ) -> ChurnRiskScore:
         """
         Calculate churn risk score.
         A heuristic model mimicking a trained ML pipeline.
@@ -35,7 +41,12 @@ class ChurnPredictor:
             score += 0.3
             factors.append("High number of unresolved support tickets")
             
-        # Factor 3: Subscription Tier
+        # Factor 3: Compliance Risk
+        if failed_audits_count > 0:
+            score += 0.5
+            factors.append(f"{failed_audits_count} failed security/compliance audits (High risk of enterprise churn)")
+            
+        # Factor 4: Subscription Tier
         if tenant.tier.name == "STARTER":
             score += 0.1
             factors.append("Starter tier historically has higher churn")

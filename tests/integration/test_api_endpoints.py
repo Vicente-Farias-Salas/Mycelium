@@ -171,6 +171,11 @@ def test_predict_churn_endpoint(client: TestClient):
     data2 = response2.json()
     assert data2["risk_level"] == "LOW"
 
+    response3 = client.get("/api/tenants/t-789/predict-churn?events_count=15000&tickets_count=0&failed_audits=3")
+    assert response3.status_code == 200
+    data3 = response3.json()
+    assert data3["risk_level"] in ("MEDIUM", "HIGH", "CRITICAL")
+
 def test_audit_project_endpoint(client: TestClient):
     """Verify SOC2/GDPR compliance audit endpoint."""
     proj_res = client.post(

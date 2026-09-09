@@ -297,7 +297,12 @@ def create_app(
             bus.unsubscribe(project_id=project_id, agent_id=agent_id)
 
     @app.get("/api/tenants/{tenant_id}/predict-churn")
-    async def predict_churn(tenant_id: str, events_count: int = Query(0), tickets_count: int = Query(0)):
+    async def predict_churn(
+        tenant_id: str, 
+        events_count: int = Query(0), 
+        tickets_count: int = Query(0),
+        failed_audits: int = Query(0)
+    ):
         from micelio.domain.billing import Tenant, SubscriptionTier
         from micelio.services.churn_predictor import ChurnPredictor
         
@@ -309,7 +314,7 @@ def create_app(
         )
         
         predictor = ChurnPredictor()
-        risk = predictor.calculate_risk(tenant, events_count, tickets_count)
+        risk = predictor.calculate_risk(tenant, events_count, tickets_count, failed_audits)
         return risk.model_dump()
 
     @app.get("/api/projects/{project_id}/audit")

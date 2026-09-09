@@ -41,10 +41,10 @@ class ProjectCreateRequest(BaseModel):
     """Schema for creating a new project."""
     model_config = ConfigDict(frozen=True)
 
-    title: str
-    vision: str
-    creator_id: str
-    distilled_specs: str
+    title: str = Field(..., min_length=3, max_length=100)
+    vision: str = Field(..., min_length=10, max_length=2000)
+    creator_id: str = Field(..., min_length=1, max_length=50)
+    distilled_specs: str = Field(..., min_length=10, max_length=10000)
     interfaces: dict[str, Any] = Field(default_factory=dict)
     constraints: tuple[str, ...] = Field(default_factory=tuple)
     shared_contracts: dict[str, Any] = Field(default_factory=dict)
@@ -73,8 +73,8 @@ class SynapseEventRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     event_type: SynapseEventType
-    source_agent_id: str
-    target_agent_id: str = "BROADCAST"
+    source_agent_id: str = Field(..., min_length=1, max_length=100)
+    target_agent_id: str = Field("BROADCAST", min_length=1, max_length=100)
     payload: dict[str, Any] = Field(default_factory=dict)
 
 

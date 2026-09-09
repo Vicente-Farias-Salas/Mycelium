@@ -28,7 +28,7 @@ def test_websocket_office_event_streaming(ws_client: TestClient):
             "title": "WebSocket Stream Test",
             "vision": "Test live events",
             "creator_id": "emp-011",
-            "distilled_specs": "Spec",
+            "distilled_specs": "Spec enough to pass validation",
             "required_skills": ["python"],
         },
     )

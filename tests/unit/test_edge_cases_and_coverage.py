@@ -127,7 +127,7 @@ def test_api_404_branches_and_decline(tmp_path: Path):
             "title": "Decline Project",
             "vision": "Test decline",
             "creator_id": "emp-001",
-            "distilled_specs": "Spec",
+            "distilled_specs": "Spec enough to pass validation",
         },
     )
     pid = create_res.json()["id"]
@@ -151,7 +151,7 @@ def test_websocket_client_messaging(tmp_path: Path):
 
     create_res = client.post(
         "/api/projects",
-        json={"title": "WS Message", "vision": "V", "creator_id": "c", "distilled_specs": "S"},
+        json={"title": "WS Message", "vision": "Vision enough to pass validation", "creator_id": "c", "distilled_specs": "Specs enough to pass validation"},
     )
     pid = create_res.json()["id"]
 

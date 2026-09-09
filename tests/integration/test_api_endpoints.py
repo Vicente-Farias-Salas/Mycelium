@@ -108,7 +108,7 @@ def test_synapse_office_event_flow(client: TestClient):
             "title": "Office Test",
             "vision": "A2A Office chatter",
             "creator_id": "mem-boss",
-            "distilled_specs": "Spec",
+            "distilled_specs": "Spec enough to pass validation",
             "required_skills": ["python"],
         },
     )
@@ -140,7 +140,7 @@ def test_rate_limit_office_event(client: TestClient):
             "title": "Rate Limit Test",
             "vision": "Check 429",
             "creator_id": "mem-boss",
-            "distilled_specs": "Spec",
+            "distilled_specs": "Spec enough to pass validation",
             "required_skills": ["python"],
         },
     )
@@ -188,7 +188,7 @@ def test_audit_project_endpoint(client: TestClient):
             "title": "Audit Test",
             "vision": "Check compliance",
             "creator_id": "mem-boss",
-            "distilled_specs": "Spec",
+            "distilled_specs": "Spec enough to pass validation",
             "required_skills": ["python"],
         },
     )
@@ -226,7 +226,7 @@ def test_analytics_overview_endpoint(client: TestClient):
             "title": "Analytics Test",
             "vision": "Check counts",
             "creator_id": "mem-1",
-            "distilled_specs": "Spec",
+            "distilled_specs": "Spec enough to pass validation",
             "required_skills": ["python"],
         },
     )
@@ -244,9 +244,9 @@ def test_global_analytics_live_feed(client: TestClient):
         "/api/projects",
         json={
             "title": "WS Test",
-            "vision": "Check WS",
+            "vision": "Check WS enough to pass validation",
             "creator_id": "mem-1",
-            "distilled_specs": "Spec",
+            "distilled_specs": "Spec enough to pass validation",
             "required_skills": ["python"],
         },
     )

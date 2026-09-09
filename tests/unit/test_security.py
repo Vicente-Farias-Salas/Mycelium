@@ -14,9 +14,9 @@ def test_api_key_required_for_project_creation(unauth_client):
         "/api/projects",
         json={
             "title": "Sec Test",
-            "vision": "V",
+            "vision": "Vision enough to pass validation",
             "creator_id": "c",
-            "distilled_specs": "S",
+            "distilled_specs": "Specs enough to pass validation",
         },
     )
     assert res.status_code == 401
@@ -26,9 +26,9 @@ def test_api_key_invalid(unauth_client):
         "/api/projects",
         json={
             "title": "Sec Test",
-            "vision": "V",
+            "vision": "Vision enough to pass validation",
             "creator_id": "c",
-            "distilled_specs": "S",
+            "distilled_specs": "Specs enough to pass validation",
         },
         headers={"X-Mycelium-API-Key": "wrong_key"}
     )

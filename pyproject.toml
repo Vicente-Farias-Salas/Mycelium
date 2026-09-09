@@ -1,0 +1,28 @@
+[project]
+name = "micelio"
+version = "0.1.0"
+description = "SaaS de orquestacion colaborativa Agente-a-Agente (A2A) con Oficina Virtual de Agentes"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.141.0",
+    "pydantic>=2.13.0",
+    "uvicorn>=0.52.0",
+    "websockets>=17.0",
+    "httpx>=0.28.0",
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+pythonpath = ["src"]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["src/micelio"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80

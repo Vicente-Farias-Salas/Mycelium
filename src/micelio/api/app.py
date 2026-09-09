@@ -74,15 +74,22 @@ class SynapseEventRequest(BaseModel):
     payload: dict[str, Any] = Field(default_factory=dict)
 
 
+from micelio.core.config import config
+
 def create_app(
-    workspace_base_dir: Path | str = "proyectos",
-    db_path: Path | str = "data/micelio.db",
+    workspace_base_dir: Path | str | None = None,
+    db_path: Path | str | None = None,
 ) -> FastAPI:
     """Create and configure the FastAPI application backed by SQLite WAL storage."""
+    # Fallback to config if not overridden
+    actual_workspace_dir = workspace_base_dir or config.workspace_base_dir
+    actual_db_path = db_path or config.db_path
+    
     app = FastAPI(
         title="Mycelium API",
         description="SaaS Enterprise de Orquestación Colaborativa A2A con Oficina Virtual de Agentes",
         version="0.2.0",
+        debug=config.debug
     )
 
     app.add_middleware(
@@ -98,7 +105,7 @@ def create_app(
         app.mount("/portal", StaticFiles(directory=str(frontend_dir), html=True), name="portal")
 
     # Initialize Storage & Core Services
-    db_manager = DatabaseManager(db_path=db_path)
+    db_manager = DatabaseManager(db_path=actual_db_path)
     db_manager.initialize_schema()
 
     project_repo = SqliteProjectRepository(db_manager)
@@ -108,7 +115,7 @@ def create_app(
 
     bus = SynapseBus()
     team_optimizer = TeamOptimizer()
-    bootstrapper = WorkspaceBootstrapper(base_dir=workspace_base_dir)
+    bootstrapper = WorkspaceBootstrapper(base_dir=actual_workspace_dir)
 
     # In-memory index for optimizer search parameters
     project_skills: dict[str, tuple[str, ...]] = {}
@@ -211,7 +218,10 @@ def create_app(
         return updated.model_dump() if updated else {}
 
     from micelio.core.rate_limiter import AgentRateLimiter, RateLimitExceededError
-    global_rate_limiter = AgentRateLimiter(max_events=20, window_seconds=1.0)
+    global_rate_limiter = AgentRateLimiter(
+        max_events=config.rate_limit_max_events, 
+        window_seconds=config.rate_limit_window_seconds
+    )
 
     @app.post("/api/projects/{project_id}/events", status_code=201)
     async def emit_office_event(project_id: str, req: SynapseEventRequest) -> dict[str, Any]:

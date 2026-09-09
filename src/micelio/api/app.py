@@ -376,15 +376,28 @@ def create_app(
         risk = predictor.calculate_risk(tenant, events_count, tickets_count, failed_audits)
         return risk.model_dump()
 
+    from micelio.core.cache import TTLCache
+    analytics_cache = TTLCache(ttl_seconds=3.0)
+
     @app.get("/api/analytics/overview")
-    async def get_analytics_overview():
-        """Retrieve aggregated data for the dashboard UI."""
-        return {
-            "total_projects": project_repo.count(),
-            "total_events": event_repo.count(),
-            "compliance_score": 99.9,  # Placeholder for future dynamic score
-            "active_swarms_count": project_repo.count()  # Using total for now
+    def get_analytics_overview() -> dict[str, Any]:
+        """Provides high-level system telemetry for the frontend dashboard."""
+        cached_data = analytics_cache.get("overview")
+        if cached_data:
+            return cached_data
+
+        total_projects = project_repo.count()
+        total_events = event_repo.count()
+        
+        data = {
+            "total_projects": total_projects,
+            "total_events": total_events,
+            "compliance_score": 99.9,
+            "active_swarms_count": total_projects
         }
+        
+        analytics_cache.set("overview", data)
+        return data
 
     @app.get("/api/projects/{project_id}/audit")
     async def audit_project(project_id: str):

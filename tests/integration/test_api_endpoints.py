@@ -128,6 +128,35 @@ def test_synapse_office_event_flow(client: TestClient):
     assert history[0]["event_type"] == "AGENT_QUERY"
     assert history[0]["payload"]["question"] == "¿El schema soporta streaming?"
 
+def test_rate_limit_office_event(client: TestClient):
+    """Verify rate limiter blocks >20 events per second."""
+    proj_res = client.post(
+        "/api/projects",
+        json={
+            "title": "Rate Limit Test",
+            "vision": "Check 429",
+            "creator_id": "mem-boss",
+            "distilled_specs": "Spec",
+            "required_skills": ["python"],
+        },
+    )
+    project_id = proj_res.json()["id"]
+
+    event_payload = {
+        "event_type": "AGENT_QUERY",
+        "source_agent_id": "agt-spammer",
+        "target_agent_id": "agt-backend",
+        "payload": {},
+    }
+    
+    # 20 allowed
+    for _ in range(20):
+        client.post(f"/api/projects/{project_id}/events", json=event_payload)
+        
+    # 21st should be blocked
+    res = client.post(f"/api/projects/{project_id}/events", json=event_payload)
+    assert res.status_code == 429
+
 
 def test_predict_churn_endpoint(client: TestClient):
     """Verify predictive churn scoring endpoint."""

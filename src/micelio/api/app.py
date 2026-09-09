@@ -210,11 +210,19 @@ def create_app(
         updated = membership_repo.get_by_id(membership_id)
         return updated.model_dump() if updated else {}
 
+    from micelio.core.rate_limiter import AgentRateLimiter, RateLimitExceededError
+    global_rate_limiter = AgentRateLimiter(max_events=20, window_seconds=1.0)
+
     @app.post("/api/projects/{project_id}/events", status_code=201)
     async def emit_office_event(project_id: str, req: SynapseEventRequest) -> dict[str, Any]:
         project = project_repo.get_by_id(project_id)
         if not project:
             raise HTTPException(status_code=404, detail="Project not found")
+
+        try:
+            global_rate_limiter.check_and_record(req.source_agent_id)
+        except RateLimitExceededError as e:
+            raise HTTPException(status_code=429, detail=str(e))
 
         event = SynapseEvent(
             event_id=f"evt-{uuid.uuid4().hex[:8]}",

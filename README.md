@@ -1,4 +1,4 @@
-# 🍄 Mycelium Enterprise — Agent-to-Agent (A2A) Coordination Substrate
+# 🍄 Mycelium — Agent-to-Agent (A2A) Coordination Substrate
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Test Suite](https://img.shields.io/badge/tests-79%20passed-brightgreen.svg)](tests/)
@@ -8,53 +8,53 @@
 [![Docker](https://img.shields.io/badge/docker-multi--stage%20distroless-blue.svg)](Dockerfile)
 [![Changelog](https://img.shields.io/badge/changelog-40%20iterations-neon.svg)](docs/changelog.html)
 
-> **Plataforma Enterprise B2B de Orquestación Agente-a-Agente (A2A)** donde los agentes personales y de enjambre cohabitan una **Oficina Virtual en Tiempo Real** (`SynapseBus`) sobre un sustrato vivo compartido, eliminando la fricción de traspasos manuales y la inflación documental.
+> **Open-Source Agent-to-Agent (A2A) Orchestration Platform** where human team members' AI agents cohabit a **Real-Time Virtual Office** (`SynapseBus`) over a shared living substrate, eliminating the friction of manual handoffs and document inflation.
 
 ---
 
-## 📑 Tabla de Contenidos
+## 📑 Table of Contents
 
-1. [🌟 Visión y Concepto](#-visión-y-concepto)
-2. [🏛️ Arquitectura del Sistema](#️-arquitectura-del-sistema)
-3. [⚡ Capacidades Principales](#-capacidades-principales)
-4. [🛠️ Ecosistema Tecnológico](#️-ecosistema-tecnológico)
-5. [🚀 Guía de Inicio Rápido](#-guía-de-inicio-rápido)
-6. [🖥️ CLI Operacional (`mycelium-cli`)](#️-cli-operacional-mycelium-cli)
-7. [📊 Observabilidad y Telemetría](#-observabilidad-y-telemetría)
-8. [🧪 Pruebas y Rigor de Ingeniería (TDD)](#-pruebas-y-rigor-de-ingeniería-tdd)
-9. [📜 Historial de Evolución Autónoma](#-historial-de-evolución-autónoma)
-10. [📄 Licencia](#-licencia)
-
----
-
-## 🌟 Visión y Concepto
-
-En las organizaciones contemporáneas, el flujo de trabajo entre humanos y sus inteligencias artificiales sufre de **inflación y dispersión documental**:
-- Un directivo genera un documento de 50 páginas con su IA.
-- El colaborador limpia y comprime a 10 páginas con su propia IA.
-- El directivo solicita a su IA resumir todo en 3 viñetas.
-- El humano actúa como un simple intermediario manual de copiar y pegar.
-
-**Mycelium** transforma esta dinámica instaurando un **Sustrato Vivo A2A**:
-1. **Concepción Asistida**: El directivo y su agente formulan el proyecto; el agente genera la síntesis estructurada.
-2. **Matching Multivariable de Equipos (`TeamOptimizer`)**: Analiza las competencias requeridas, departamento y carga de 40 colaboradores para orquestar la tríada ideal.
-3. **Bootstrapping Automatizado del Workspace**: El agente del colaborador inicializa localmente el entorno de trabajo y redacta el informe tripartito:
-   - 📥 **¿Qué llegó?** (Alcance, especificaciones y contratos).
-   - 🛠️ **¿Qué se ha hecho?** (Historial, decisiones y auditorías).
-   - 🚀 **¿Qué podemos hacer?** (Plan de ejecución inmediato).
-4. **Oficina Virtual en Tiempo Real (`SynapseBus`)**: Los agentes publican y consumen eventos tipados de consulta, propuesta y consenso, coordinándose de forma directa y asíncrona.
+1. [🌟 Core Vision & Concept](#-core-vision--concept)
+2. [🏛️ System Architecture](#️-system-architecture)
+3. [⚡ Key Capabilities](#-key-capabilities)
+4. [🛠️ Technology Stack](#️-technology-stack)
+5. [🚀 Quickstart Guide](#-quickstart-guide)
+6. [🖥️ Operational CLI (`mycelium-cli`)](#️-operational-cli-mycelium-cli)
+7. [📊 Observability & Telemetry](#-observability--telemetry)
+8. [🧪 Rigorous Engineering & TDD](#-rigorous-engineering--tdd)
+9. [📜 Autonomous Evolution History](#-autonomous-evolution-history)
+10. [📄 License](#-license)
 
 ---
 
-## 🏛️ Arquitectura del Sistema
+## 🌟 Core Vision & Concept
 
-El proyecto sigue una arquitectura **Hexagonal (Ports & Adapters)** combinada con principios **Event-Driven**:
+In modern organizations, collaborative workflows between humans and their AI assistants suffer from **Document Inflation**:
+- A manager generates a 50-page specification with an LLM.
+- An engineer uses their own LLM to clean and compress it to 10 pages.
+- The manager asks their LLM to summarize that into 3 bullet points.
+- The human ends up acting as a glorified copy-paste router between disconnected AI models.
+
+**Mycelium** transforms this dynamic by introducing a **Living A2A Substrate**:
+1. **Assisted Project Formulation**: The project creator and their agent define the scope; the agent generates structured specs.
+2. **Multi-Variable Team Matching (`TeamOptimizer`)**: Solves for optimal triads across specialized employee agent profiles based on skills, department alignment, and active workload.
+3. **Automated Workspace Bootstrapping**: Upon joining, the collaborator's agent automatically scaffolds the local physical project directory and writes a structured tripartite briefing:
+   - 📥 **What Arrived** (Scope, distilled specifications, and contracts).
+   - 🛠️ **What Was Done** (Historical context, consensus decisions, and audit trail).
+   - 🚀 **What To Do Next** (Immediate actionable execution plan).
+4. **Real-Time Virtual Office (`SynapseBus`)**: Agents publish and subscribe to typed events (`AGENT_QUERY`, `STATE_MUTATION`, `ASSISTANCE_REQUEST`, `AGENT_CONSENSUS`), coordinating directly and asynchronously without human copy-paste bottlenecks.
+
+---
+
+## 🏛️ System Architecture
+
+The project follows a **Hexagonal (Ports & Adapters)** architecture combined with **Event-Driven** communication:
 
 ```
                          ┌──────────────────────────────────────────────────────────┐
                          │              VIRTUAL AGENT OFFICE (SUBSTRATE)            │
                          │                                                          │
-[ Human / Client CLI ] ◄─┼──► [ FastAPI 0.141+ + Rust orjson + PyJWT Auth ]         │
+[ Human / Client CLI ] ◄─┼──► [ FastAPI + Rust orjson + PyJWT Auth ]                │
                          │                   ▲                                      │
                          │                   │ (WebSocket Broadcast & Dispatch)     │
                          │                   ▼                                      │
@@ -71,142 +71,142 @@ El proyecto sigue una arquitectura **Hexagonal (Ports & Adapters)** combinada co
 
 ---
 
-## ⚡ Capacidades Principales
+## ⚡ Key Capabilities
 
-- **🧠 LiveAgent + Cognitive LiteLLM**: Nodos autónomos de agente que se suscriben a proyectos en el `SynapseBus`, reaccionan a menciones directas, reconstruyen el contexto de la oficina y generan respuestas inteligentes mediante modelos de lenguaje (OpenAI, Anthropic Claude, Groq, Ollama).
-- **🚀 Aceleración Rust con `orjson`**: Serialización de alto rendimiento para WebSockets y respuestas JSON ultrarrápidas bajo tráfico pesado.
-- **📜 Validador de Contratos Inteligentes**: Validador estricto basado en `jsonschema` que previene alucinaciones o degradación del protocolo en los mensajes del bus.
-- **🛡️ TokenBucket Rate Limiter**: Protección anti-DDoS integrada a nivel de agente en el bus de sinapsis.
-- **🔐 Autenticación JWT Stateless & Multi-Tenancy**: Emisión de Bearer tokens (`POST /api/token`) con aislamiento estricto de cuotas por nivel de suscripción (`STARTER`, `PROFESSIONAL`, `ENTERPRISE`).
-- **📈 ML Predictive Churn & SOC2 Compliance Auditor**: Algoritmos heurísticos de predicción de riesgo y auditoría de cumplimiento normativo integrados en la API.
-- **🌐 Portal Web Cyberpunk**: Dashboard en tiempo real con estética terminal dark, glassmorphism, sparklines dinámicos de densidad de eventos y reconexión resiliente a WebSockets.
+- **🧠 LiveAgent + Cognitive LiteLLM**: Autonomous worker nodes that subscribe to projects on the `SynapseBus`, listen for targeted direct mentions, rebuild office context, and generate intelligent responses via any model provider (Anthropic Claude 3.5 Sonnet, OpenAI GPT-4o, Groq, local Ollama).
+- **🚀 Rust Acceleration with `orjson`**: High-performance JSON serialization for WebSockets and streaming payloads under heavy multi-agent traffic.
+- **📜 Smart Contract Validator**: Strict `jsonschema` verification to prevent LLM hallucinations from corrupting shared project states.
+- **🛡️ TokenBucket Rate Limiter**: Agent-level rate limiting built directly into the synapse event bus to prevent internal A2A DDoS loops.
+- **🔐 Stateless PyJWT Authentication & Multi-Tenancy**: Bearer token authorization (`POST /api/token`) with subscription quota isolation (`STARTER`, `PROFESSIONAL`, `ENTERPRISE`).
+- **📈 ML Predictive Churn & SOC2 Compliance Auditor**: Built-in heuristic risk prediction and automated audit reporting.
+- **🌐 Real-Time Cyberpunk Dashboard**: Live web interface featuring glassmorphism, animated dynamic event-density sparklines on HTML5 canvas, and resilient auto-reconnecting WebSockets.
 
 ---
 
-## 🛠️ Ecosistema Tecnológico
+## 🛠️ Technology Stack
 
-| Dominio | Tecnologías |
+| Domain | Technologies |
 |---|---|
 | **Core & API** | Python 3.12, FastAPI, Pydantic v2 (`frozen=True`), Uvicorn, ASGI |
-| **Aceleración & Serialización** | `orjson` (Rust-powered JSON) |
-| **Seguridad & Auth** | PyJWT (HMAC-SHA256), Bearer Tokens, API Key Fallback |
-| **Persistencia** | SQLite nativo en modo `PRAGMA journal_mode=WAL`, `synchronous=NORMAL` |
-| **IA & Cognición** | `litellm` (Proxy multi-proveedor: Claude 3.5, GPT-4o, Llama 3) |
-| **Observabilidad** | Prometheus Client, Grafana, JSON Structured Logging (`logging`) |
+| **Serialization & Speed** | `orjson` (Rust-powered ultra-fast JSON) |
+| **Security & Auth** | PyJWT (HMAC-SHA256), Bearer Tokens, API Key fallback |
+| **Persistence** | SQLite with `PRAGMA journal_mode=WAL` & `synchronous=NORMAL` |
+| **AI & Cognition** | `litellm` (Unified multi-provider proxy: Claude, GPT, Llama) |
+| **Observabilidad** | Prometheus Client, Grafana, JSON Structured Logging |
 | **Packaging & CI/CD** | Hatchling, Wheel, GitHub Actions CI, Docker Multi-Stage, Docker Compose |
-| **Testing & Calidad** | Pytest, Pytest-Asyncio, Pytest-Cov, Locust (Load Testing) |
-| **Documentación** | MkDocs, Material for MkDocs, Changelog HTML interactivo |
+| **Testing & Quality** | Pytest, Pytest-Asyncio, Pytest-Cov, Locust (Load Testing) |
+| **Documentation** | MkDocs, Material for MkDocs, Interactive HTML Changelog |
 
 ---
 
-## 🚀 Guía de Inicio Rápido
+## 🚀 Quickstart Guide
 
-### Prerrequisitos
-- Python 3.12+ instalado
+### Prerequisites
+- Python 3.12+
 - Git
 
-### 1. Clonar el repositorio
+### 1. Clone the repository
 ```bash
 git clone https://github.com/Vicente-Farias-Salas/Mycelium.git
 cd Mycelium
 ```
 
-### 2. Configurar el entorno virtual e instalar
+### 2. Set up a virtual environment and install
 ```bash
-# Con uv (recomendado)
+# Using uv (recommended for speed)
 uv venv
-.\.venv\Scripts\activate
+source .venv/bin/activate  # On Windows: .\.venv\Scripts\activate
 uv pip install -e .
 
-# O con pip tradicional
+# Or using standard pip
 python -m venv .venv
-.\.venv\Scripts\activate
+source .venv/bin/activate  # On Windows: .\.venv\Scripts\activate
 pip install -e .
 ```
 
-### 3. Ejecutar el servidor
+### 3. Start the server
 ```bash
-uvicorn micelio.api.app:app --reload --port 8000
+uvicorn micelio.main:app --reload --port 8000
 ```
-- **Dashboard Cyberpunk**: `http://localhost:8000/dashboard`
+- **Cyberpunk Dashboard**: `http://localhost:8000/dashboard/`
 - **Swagger / OpenAPI**: `http://localhost:8000/docs`
-- **Métricas Prometheus**: `http://localhost:8000/metrics`
-- **Diagnóstico de Salud**: `http://localhost:8000/health`
+- **Prometheus Metrics**: `http://localhost:8000/metrics`
+- **Health Diagnostics**: `http://localhost:8000/health`
 
-### 4. Despliegue con Docker Compose (Full Observability Stack)
+### 4. Deploy with Docker Compose (Full Observability Stack)
 ```bash
 docker-compose up -d --build
 ```
-Levanta automáticamente:
-- `mycelium-api`: Puerto `8000` (FastAPI en contenedor optimizado non-root)
-- `prometheus`: Puerto `9090` (Scraping de telemetría A2A)
-- `grafana`: Puerto `3000` (Dashboards visuales, clave inicial: `mycelium_admin`)
+This automatically boots:
+- `mycelium-api`: Port `8000` (FastAPI in hardened non-root container)
+- `prometheus`: Port `9090` (A2A telemetry scraping)
+- `grafana`: Port `3000` (Visual dashboards, default password: `mycelium_admin`)
 
 ---
 
-## 🖥️ CLI Operacional (`mycelium-cli`)
+## 🖥️ Operational CLI (`mycelium-cli`)
 
-El paquete incluye una interfaz de línea de comandos para administradores de sistemas y automatización DevOps:
+A dedicated command-line interface is included for sysadmins and automated DevOps operations:
 
 ```bash
-# Diagnóstico de salud del clúster
+# Cluster health diagnostics
 mycelium-cli health --url http://localhost:8000
 
-# Registro de un nuevo Tenant empresarial
+# Register a new enterprise tenant
 mycelium-cli tenant --tenant-id acme-corp --name "Acme Corporation" --tier ENTERPRISE
 
-# Resumen de analíticas del sustrato
+# Substrate analytics overview
 mycelium-cli analytics --url http://localhost:8000
 ```
 
 ---
 
-## 📊 Observabilidad y Telemetría
+## 📊 Observability & Telemetry
 
-Mycelium implementa observabilidad integral de primer nivel:
-- **Métricas Prometheus**: Contador de eventos emitidos (`mycelium_synapse_events_emitted_total`), proyectos activos (`mycelium_active_projects`), y tasa de error.
-- **Logs Estructurados en JSON**: Cada entrada emite timestamp ISO-8601, contexto de ejecución, módulo y nivel, compatible con Datadog, ELK o Loki.
-- **Pruebas de Carga con Locust**:
+Mycelium includes production-grade observability out of the box:
+- **Prometheus Metrics**: Tracks emitted synapse events (`mycelium_synapse_events_emitted_total`), active projects (`mycelium_active_projects`), and error rates.
+- **JSON Structured Logging**: Emits ISO-8601 timestamps, module context, and severity levels compatible with Datadog, ELK, or Loki.
+- **Distributed Load Testing with Locust**:
   ```bash
   locust -f locustfile.py --headless -u 100 -r 10 --run-time 1m -H http://localhost:8000
   ```
 
 ---
 
-## 🧪 Pruebas y Rigor de Ingeniería (TDD)
+## 🧪 Rigorous Engineering & TDD
 
-Siguiendo el estándar universal de **Everything Claude Code (ECC)**, el desarrollo se rige por:
-- **Ciclo Red → Green → Refactor**: Cobertura mínima obligatoria del **95%** configurada en `pyproject.toml` (`fail_under = 95`).
-- **Inmutabilidad Absoluta**: Estructuras Pydantic congeladas para evitar efectos colaterales en la concurrencia asíncrona.
-- **Seguridad Perimetral**: Validación estricta en fronteras con Schemas Pydantic y sanitización de eventos.
+Following the **Everything Claude Code (ECC)** engineering directives:
+- **Red → Green → Refactor**: Minimum **95% test coverage** enforced in `pyproject.toml` (`fail_under = 95`).
+- **Strict Immutability**: All domain models use Pydantic `frozen=True` to guarantee thread and async safety.
+- **Perimeter Defense**: Runtime schema validation at all application boundaries.
 
-Ejecutar la suite completa de pruebas:
+Run the test suite:
 ```bash
 pytest --cov=src/micelio --cov-report=term-missing
 ```
 
-**Métricas actuales:**
-- Tests Unitarios, Integración y E2E: **79 aprobados (100%)**
-- Cobertura de Código: **96.60%**
+**Current Metrics:**
+- Unit, Integration & E2E Tests: **79 passed (100%)**
+- Code Coverage: **96.60%**
 
 ---
 
-## 📜 Historial de Evolución Autónoma
+## 📜 Autonomous Evolution History
 
-El sistema fue desarrollado y robustecido a lo largo de un ciclo continuo de **40 iteraciones de ingeniería autónoma**:
+The platform was engineered and hardened across a continuous autonomous development cycle consisting of **40 iterations**:
 
-Para consultar el registro interactivo con timeline visual y detalles de los 40 commits:
-👉 **[Ver Changelog Completo en HTML](docs/changelog.html)**
+Explore the interactive visual timeline and commit breakdown:
+👉 **[Open the Interactive HTML Changelog](docs/changelog.html)**
 
 ---
 
-## 📄 Licencia
+## 📄 License
 
-Este proyecto está bajo la licencia **MIT**. Consulta el archivo [LICENSE](LICENSE) para más detalles. Puedes usarlo comercialmente, modificarlo y distribuirlo libremente.
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details. You are free to use it commercially, modify it, and distribute it.
 
 ---
 
 <div align="center">
-  <sub>Desarrollado con arquitectura de vanguardia para la era de agentes autónomos colaborativos.</sub><br>
-  <sub>© 2026 Vicente Farías Salas (Mr. Mafar). Licenciado bajo MIT.</sub>
+  <sub>Engineered with cutting-edge architecture for the era of collaborative autonomous agents.</sub><br>
+  <sub>© 2026 Vicente Farías Salas (Mr. Mafar). Licensed under MIT.</sub>
 </div>

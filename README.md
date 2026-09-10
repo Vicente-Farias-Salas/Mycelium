@@ -5,7 +5,6 @@
 [![Coverage](https://img.shields.io/badge/coverage-96.60%25-success.svg)](pyproject.toml)
 [![Architecture](https://img.shields.io/badge/architecture-Hexagonal%20%7C%20Event--Driven-purple.svg)](docs/architecture.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa?logo=GitHub-Sponsors)](https://github.com/sponsors/Vicente-Farias-Salas)
 [![Docker](https://img.shields.io/badge/docker-multi--stage%20distroless-blue.svg)](Dockerfile)
 [![Changelog](https://img.shields.io/badge/changelog-40%20iterations-neon.svg)](docs/changelog.html)
 
@@ -24,8 +23,7 @@
 7. [📊 Observabilidad y Telemetría](#-observabilidad-y-telemetría)
 8. [🧪 Pruebas y Rigor de Ingeniería (TDD)](#-pruebas-y-rigor-de-ingeniería-tdd)
 9. [📜 Historial de Evolución Autónoma](#-historial-de-evolución-autónoma)
-10. [💖 Apoya el Proyecto (GitHub Sponsors)](#-apoya-el-proyecto-github-sponsors)
-11. [📄 Licencia](#-licencia)
+10. [📄 Licencia](#-licencia)
 
 ---
 
@@ -199,21 +197,6 @@ El sistema fue desarrollado y robustecido a lo largo de un ciclo continuo de **4
 
 Para consultar el registro interactivo con timeline visual y detalles de los 40 commits:
 👉 **[Ver Changelog Completo en HTML](docs/changelog.html)**
-
----
-
-## 💖 Apoya el Proyecto (GitHub Sponsors)
-
-**Mycelium** es un software de código abierto (Open Source) creado para democratizar la orquestación colaborativa entre humanos e inteligencias artificiales. Cualquier persona o empresa es libre de usarlo, modificarlo y desplegarlo.
-
-Si este proyecto te ha ahorrado tiempo, te ha servido de inspiración o lo estás utilizando para potenciar la productividad de tu organización, puedes apoyar su mantenimiento y evolución continua convirtiéndote en patrocinador:
-
-👉 **[Patrocinar a Vicente Farías Salas en GitHub Sponsors](https://github.com/sponsors/Vicente-Farias-Salas)**
-
-### Niveles de Reconocimiento
-* **☕ Supporter ($5 / mes):** Tu nombre en la lista oficial de agradecimientos del `README.md`.
-* **🚀 Enjambre Pro ($25 / mes):** Agradecimiento destacado en las notas de lanzamiento de cada versión mayor y prioridad en discusión de issues.
-* **🏢 Sponsor Corporativo ($100+ / mes):** Logotipo de tu empresa en la cabecera del `README.md` y mención en el portal web del Dashboard.
 
 ---
 

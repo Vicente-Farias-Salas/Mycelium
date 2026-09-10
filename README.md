@@ -1,10 +1,11 @@
 # 🍄 Mycelium Enterprise — Agent-to-Agent (A2A) Coordination Substrate
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![Test Suite](https://img.shields.io/badge/tests-78%20passed-brightgreen.svg)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-96.71%25-success.svg)](pyproject.toml)
+[![Test Suite](https://img.shields.io/badge/tests-79%20passed-brightgreen.svg)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-96.60%25-success.svg)](pyproject.toml)
 [![Architecture](https://img.shields.io/badge/architecture-Hexagonal%20%7C%20Event--Driven-purple.svg)](docs/architecture.md)
-[![License](https://img.shields.io/badge/license-Proprietary%20%2F%20Enterprise-orange.svg)](#)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%E2%9D%A4-ea4aaa?logo=GitHub-Sponsors)](https://github.com/sponsors/Vicente-Farias-Salas)
 [![Docker](https://img.shields.io/badge/docker-multi--stage%20distroless-blue.svg)](Dockerfile)
 [![Changelog](https://img.shields.io/badge/changelog-40%20iterations-neon.svg)](docs/changelog.html)
 
@@ -23,6 +24,8 @@
 7. [📊 Observabilidad y Telemetría](#-observabilidad-y-telemetría)
 8. [🧪 Pruebas y Rigor de Ingeniería (TDD)](#-pruebas-y-rigor-de-ingeniería-tdd)
 9. [📜 Historial de Evolución Autónoma](#-historial-de-evolución-autónoma)
+10. [💖 Apoya el Proyecto (GitHub Sponsors)](#-apoya-el-proyecto-github-sponsors)
+11. [📄 Licencia](#-licencia)
 
 ---
 
@@ -185,8 +188,8 @@ pytest --cov=src/micelio --cov-report=term-missing
 ```
 
 **Métricas actuales:**
-- Tests Unitarios, Integración y E2E: **78 aprobados (100%)**
-- Cobertura de Código: **96.71%**
+- Tests Unitarios, Integración y E2E: **79 aprobados (100%)**
+- Cobertura de Código: **96.60%**
 
 ---
 
@@ -199,7 +202,28 @@ Para consultar el registro interactivo con timeline visual y detalles de los 40 
 
 ---
 
+## 💖 Apoya el Proyecto (GitHub Sponsors)
+
+**Mycelium** es un software de código abierto (Open Source) creado para democratizar la orquestación colaborativa entre humanos e inteligencias artificiales. Cualquier persona o empresa es libre de usarlo, modificarlo y desplegarlo.
+
+Si este proyecto te ha ahorrado tiempo, te ha servido de inspiración o lo estás utilizando para potenciar la productividad de tu organización, puedes apoyar su mantenimiento y evolución continua convirtiéndote en patrocinador:
+
+👉 **[Patrocinar a Vicente Farías Salas en GitHub Sponsors](https://github.com/sponsors/Vicente-Farias-Salas)**
+
+### Niveles de Reconocimiento
+* **☕ Supporter ($5 / mes):** Tu nombre en la lista oficial de agradecimientos del `README.md`.
+* **🚀 Enjambre Pro ($25 / mes):** Agradecimiento destacado en las notas de lanzamiento de cada versión mayor y prioridad en discusión de issues.
+* **🏢 Sponsor Corporativo ($100+ / mes):** Logotipo de tu empresa en la cabecera del `README.md` y mención en el portal web del Dashboard.
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la licencia **MIT**. Consulta el archivo [LICENSE](LICENSE) para más detalles. Puedes usarlo comercialmente, modificarlo y distribuirlo libremente.
+
+---
+
 <div align="center">
   <sub>Desarrollado con arquitectura de vanguardia para la era de agentes autónomos colaborativos.</sub><br>
-  <sub>© 2026 Mycelium Enterprise. Todos los derechos reservados.</sub>
+  <sub>© 2026 Vicente Farías Salas (Mr. Mafar). Licenciado bajo MIT.</sub>
 </div>

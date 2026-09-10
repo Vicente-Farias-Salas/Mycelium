@@ -10,6 +10,7 @@ name = "micelio-enterprise"
 version = "0.2.0"
 description = "Mycelium: SaaS Enterprise de orquestación colaborativa Agente-a-Agente (A2A) con Oficina Virtual de Agentes"
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.141.0",
